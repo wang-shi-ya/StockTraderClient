@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoginDialog</class>
+ <widget class="QDialog" name="LoginDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>345</width>
+    <height>228</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Login / Register</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tabLogin">
+      <attribute name="title">
+       <string>登录</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayoutLogin">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelUserLogin">
+         <property name="text">
+          <string>用户名：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineUserLogin"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelPwdLogin">
+         <property name="text">
+          <string>密码：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="linePwdLogin">
+         <property name="echoMode">
+          <enum>QLineEdit::EchoMode::Password</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelCaptchaLogin">
+         <property name="text">
+          <string>验证码：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="captchaLayout">
+         <item>
+          <widget class="QLineEdit" name="lineCaptchaLogin">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelCaptchaCode">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string>background-color: #f0f0f0; border: 1px solid #ccc; font-size: 18px; font-weight: bold; color: #333;</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QPushButton" name="btnLogin">
+         <property name="text">
+          <string>登录</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabRegister">
+      <attribute name="title">
+       <string>注册</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayoutRegister">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelUserReg">
+         <property name="text">
+          <string>用户名：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineUserReg"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelPwdReg">
+         <property name="text">
+          <string>密码：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="linePwdReg">
+         <property name="echoMode">
+          <enum>QLineEdit::EchoMode::Password</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelRealNameReg">
+         <property name="text">
+          <string>真实姓名：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineRealNameReg"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelEmailReg">
+         <property name="text">
+          <string>邮箱：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="lineEmailReg"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="labelPhoneReg">
+         <property name="text">
+          <string>手机号：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="linePhoneReg"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="labelIdCardReg">
+         <property name="text">
+          <string>身份证号：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="lineIdCardReg"/>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="labelAddressReg">
+         <property name="text">
+          <string>地址：</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLineEdit" name="lineAddressReg"/>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QPushButton" name="btnRegister">
+         <property name="text">
+          <string>注册</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
