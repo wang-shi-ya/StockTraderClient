@@ -2,6 +2,9 @@
 
 #include <QDialog>
 #include <QRegularExpressionValidator>
+#include <QIcon>
+class QLineEdit;
+class QAction;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class LoginDialog; }
@@ -28,10 +31,14 @@ private slots:
 private:
 	void setupConnections();
 	void setupInputValidation();
+	void setupPasswordToggles();
+	void setupPasswordToggle(QLineEdit *lineEdit);
+	static QIcon createEyeIcon(bool open);
 	void generateCaptcha();
 	bool validateCaptcha(const QString &input);
 	bool eventFilter(QObject *obj, QEvent *event) override;
-	
+	void refreshTheme();
+
 	QString m_captchaCode; // 当前验证码
 	QRegularExpressionValidator *m_emailValidator; // 邮箱验证器
 	QRegularExpressionValidator *m_phoneValidator; // 手机号验证器

@@ -1,8 +1,15 @@
-QT       += core gui network sql
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+
+# Qt6 + 某些 MinGW 工具链组合下会因 Qt6EntryPoint 触发 __imp___argc 链接失败。
+# 先禁用 entrypoint 并改为 console 子系统以保证可链接运行（避免旧 exe 导致界面/逻辑不更新）。
+win32:greaterThan(QT_MAJOR_VERSION, 5) {
+    CONFIG -= entrypoint
+    CONFIG += console
+}
 
 TARGET = StockTraderClient
 TEMPLATE = app
@@ -16,32 +23,40 @@ SOURCES += \
     source/mainwindow.cpp \
     source/client.cpp \
     source/logindialog.cpp \
-    source/dbconnectionpool.cpp \
+    source/httpmanager.cpp \
     source/dbmanager.cpp \
     source/dataservice.cpp \
     source/quotewidget.cpp \
     source/klinewidget.cpp \
     source/companywidget.cpp \
+    source/newswidget.cpp \
     source/userservice.cpp \
     source/userinfowidget.cpp \
-    source/edituserinfodialog.cpp
+    source/edituserinfodialog.cpp \
+    source/themehelper.cpp \
+    source/rippleoverlay.cpp \
+    source/themetogglebutton.cpp
 
 # 头文件
 HEADERS += \
     head/mainwindow.h \
     head/client.h \
     head/logindialog.h \
-    head/dbconnectionpool.h \
+    head/httpmanager.h \
     head/dbmanager.h \
     head/quotedata.h \
     head/dataservice.h \
     head/quotewidget.h \
     head/klinewidget.h \
     head/companywidget.h \
+    head/newswidget.h \
     head/userinfo.h \
     head/userservice.h \
     head/userinfowidget.h \
-    head/edituserinfodialog.h
+    head/edituserinfodialog.h \
+    head/themehelper.h \
+    head/rippleoverlay.h \
+    head/themetogglebutton.h
 
 # UI 界面文件
 FORMS += \
@@ -50,6 +65,7 @@ FORMS += \
     ui/quotewidget.ui \
     ui/klinewidget.ui \
     ui/companywidget.ui \
+    ui/newswidget.ui \
     ui/userinfowidget.ui \
     ui/edituserinfodialog.ui
 

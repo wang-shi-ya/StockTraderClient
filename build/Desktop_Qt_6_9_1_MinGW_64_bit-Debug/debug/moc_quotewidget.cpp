@@ -57,7 +57,10 @@ template <> constexpr inline auto QuoteWidget::qt_create_metaobjectdata<qt_meta_
         "onSectorDataUpdated",
         "QList<SectorData>",
         "sectors",
-        "refreshData"
+        "refreshData",
+        "onWatchedSymbolsLoaded",
+        "username",
+        "symbols"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -85,6 +88,10 @@ template <> constexpr inline auto QuoteWidget::qt_create_metaobjectdata<qt_meta_
         }}),
         // Slot 'refreshData'
         QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onWatchedSymbolsLoaded'
+        QtMocHelpers::SlotData<void(const QString &, const QStringList &)>(18, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 19 }, { QMetaType::QStringList, 20 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -116,6 +123,7 @@ void QuoteWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 5: _t->onIndexDataUpdated((*reinterpret_cast< std::add_pointer_t<QList<IndexData>>>(_a[1]))); break;
         case 6: _t->onSectorDataUpdated((*reinterpret_cast< std::add_pointer_t<QList<SectorData>>>(_a[1]))); break;
         case 7: _t->refreshData(); break;
+        case 8: _t->onWatchedSymbolsLoaded((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QStringList>>(_a[2]))); break;
         default: ;
         }
     }
@@ -177,14 +185,14 @@ int QuoteWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 9;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 9;
     }
     return _id;
 }

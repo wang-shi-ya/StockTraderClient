@@ -50,7 +50,9 @@ template <> constexpr inline auto KLineWidget::qt_create_metaobjectdata<qt_meta_
         "data",
         "onQuoteUpdated",
         "QuoteData",
-        "quote"
+        "quote",
+        "onStockListUpdated",
+        "symbols"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -63,6 +65,10 @@ template <> constexpr inline auto KLineWidget::qt_create_metaobjectdata<qt_meta_
         // Slot 'onQuoteUpdated'
         QtMocHelpers::SlotData<void(const QuoteData &)>(8, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { 0x80000000 | 9, 10 },
+        }}),
+        // Slot 'onStockListUpdated'
+        QtMocHelpers::SlotData<void(const QStringList &)>(11, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QStringList, 12 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -90,6 +96,7 @@ void KLineWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 0: _t->onPeriodChanged(); break;
         case 1: _t->onKLineDataReceived((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QList<KLineData>>>(_a[3]))); break;
         case 2: _t->onQuoteUpdated((*reinterpret_cast< std::add_pointer_t<QuoteData>>(_a[1]))); break;
+        case 3: _t->onStockListUpdated((*reinterpret_cast< std::add_pointer_t<QStringList>>(_a[1]))); break;
         default: ;
         }
     }
@@ -133,14 +140,14 @@ int KLineWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 3)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 3;
+        _id -= 4;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 3)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 3;
+        _id -= 4;
     }
     return _id;
 }

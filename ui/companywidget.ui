@@ -21,19 +21,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="symbolCombo"/>
+      <widget class="QComboBox" name="symbolCombo">
+       <property name="minimumWidth">
+        <number>200</number>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="refreshButton">
        <property name="text">
         <string>刷新</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="reloadButton">
-       <property name="text">
-        <string>重新加载列表</string>
        </property>
       </widget>
      </item>

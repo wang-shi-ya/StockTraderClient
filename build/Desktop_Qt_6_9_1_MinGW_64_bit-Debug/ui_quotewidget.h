@@ -11,10 +11,10 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QTabWidget>
@@ -33,7 +33,7 @@ public:
     QVBoxLayout *quoteLayout;
     QHBoxLayout *controlLayout;
     QLabel *labelSymbol;
-    QLineEdit *symbolInput;
+    QComboBox *symbolInput;
     QPushButton *addButton;
     QPushButton *removeButton;
     QPushButton *refreshButton;
@@ -41,9 +41,11 @@ public:
     QTableWidget *quoteTable;
     QWidget *indexTab;
     QVBoxLayout *indexLayout;
+    QLabel *indexTitleLabel;
     QTableWidget *indexTable;
     QWidget *sectorTab;
     QVBoxLayout *sectorLayout;
+    QLabel *sectorTitleLabel;
     QTableWidget *sectorTable;
 
     void setupUi(QWidget *QuoteWidget)
@@ -66,8 +68,10 @@ public:
 
         controlLayout->addWidget(labelSymbol);
 
-        symbolInput = new QLineEdit(quoteTab);
+        symbolInput = new QComboBox(quoteTab);
         symbolInput->setObjectName("symbolInput");
+        symbolInput->setEditable(true);
+        symbolInput->setInsertPolicy(QComboBox::NoInsert);
 
         controlLayout->addWidget(symbolInput);
 
@@ -106,6 +110,11 @@ public:
         indexTab->setObjectName("indexTab");
         indexLayout = new QVBoxLayout(indexTab);
         indexLayout->setObjectName("indexLayout");
+        indexTitleLabel = new QLabel(indexTab);
+        indexTitleLabel->setObjectName("indexTitleLabel");
+
+        indexLayout->addWidget(indexTitleLabel);
+
         indexTable = new QTableWidget(indexTab);
         indexTable->setObjectName("indexTable");
         indexTable->setAlternatingRowColors(true);
@@ -118,6 +127,11 @@ public:
         sectorTab->setObjectName("sectorTab");
         sectorLayout = new QVBoxLayout(sectorTab);
         sectorLayout->setObjectName("sectorLayout");
+        sectorTitleLabel = new QLabel(sectorTab);
+        sectorTitleLabel->setObjectName("sectorTitleLabel");
+
+        sectorLayout->addWidget(sectorTitleLabel);
+
         sectorTable = new QTableWidget(sectorTab);
         sectorTable->setObjectName("sectorTable");
         sectorTable->setAlternatingRowColors(true);
@@ -141,12 +155,16 @@ public:
     void retranslateUi(QWidget *QuoteWidget)
     {
         labelSymbol->setText(QCoreApplication::translate("QuoteWidget", "\350\202\241\347\245\250\344\273\243\347\240\201:", nullptr));
-        symbolInput->setPlaceholderText(QCoreApplication::translate("QuoteWidget", "\350\276\223\345\205\245\350\202\241\347\245\250\344\273\243\347\240\201\357\274\214\345\246\202\357\274\232000001", nullptr));
+        symbolInput->setPlaceholderText(QCoreApplication::translate("QuoteWidget", "\350\276\223\345\205\245\346\210\226\351\200\211\346\213\251\350\202\241\347\245\250\344\273\243\347\240\201", nullptr));
         addButton->setText(QCoreApplication::translate("QuoteWidget", "\346\267\273\345\212\240", nullptr));
         removeButton->setText(QCoreApplication::translate("QuoteWidget", "\347\247\273\351\231\244", nullptr));
         refreshButton->setText(QCoreApplication::translate("QuoteWidget", "\345\210\267\346\226\260", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(quoteTab), QCoreApplication::translate("QuoteWidget", "\345\256\236\346\227\266\350\241\214\346\203\205", nullptr));
+        indexTitleLabel->setText(QCoreApplication::translate("QuoteWidget", "\345\270\202\345\234\272\346\214\207\346\225\260", nullptr));
+        indexTitleLabel->setStyleSheet(QCoreApplication::translate("QuoteWidget", "font-weight: bold; font-size: 14px; color: #333; padding: 4px 0;", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(indexTab), QCoreApplication::translate("QuoteWidget", "\345\270\202\345\234\272\346\214\207\346\225\260", nullptr));
+        sectorTitleLabel->setText(QCoreApplication::translate("QuoteWidget", "\346\235\277\345\235\227\350\241\214\346\203\205", nullptr));
+        sectorTitleLabel->setStyleSheet(QCoreApplication::translate("QuoteWidget", "font-weight: bold; font-size: 14px; color: #333; padding: 4px 0;", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(sectorTab), QCoreApplication::translate("QuoteWidget", "\346\235\277\345\235\227\350\241\214\346\203\205", nullptr));
         (void)QuoteWidget;
     } // retranslateUi

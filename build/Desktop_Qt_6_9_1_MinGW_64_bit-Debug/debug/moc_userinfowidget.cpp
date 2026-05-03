@@ -57,9 +57,18 @@ template <> constexpr inline auto UserInfoWidget::qt_create_metaobjectdata<qt_me
         "stats",
         "onRefreshClicked",
         "onEditPersonalInfoClicked",
+        "onChangePasswordClicked",
+        "onDepositClicked",
+        "onWithdrawClicked",
+        "onDepositSuccess",
+        "message",
+        "onDepositFailed",
+        "onWithdrawSuccess",
+        "onWithdrawFailed",
+        "onPasswordChangeSuccess",
+        "onPasswordChangeFailed",
         "onAuthButtonClicked",
-        "handleLoggedOut",
-        "message"
+        "handleLoggedOut"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -85,11 +94,41 @@ template <> constexpr inline auto UserInfoWidget::qt_create_metaobjectdata<qt_me
         QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onEditPersonalInfoClicked'
         QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onAuthButtonClicked'
+        // Slot 'onChangePasswordClicked'
         QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onDepositClicked'
+        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onWithdrawClicked'
+        QtMocHelpers::SlotData<void()>(19, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onDepositSuccess'
+        QtMocHelpers::SlotData<void(const QString &)>(20, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
+        }}),
+        // Slot 'onDepositFailed'
+        QtMocHelpers::SlotData<void(const QString &)>(22, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
+        }}),
+        // Slot 'onWithdrawSuccess'
+        QtMocHelpers::SlotData<void(const QString &)>(23, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
+        }}),
+        // Slot 'onWithdrawFailed'
+        QtMocHelpers::SlotData<void(const QString &)>(24, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
+        }}),
+        // Slot 'onPasswordChangeSuccess'
+        QtMocHelpers::SlotData<void(const QString &)>(25, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
+        }}),
+        // Slot 'onPasswordChangeFailed'
+        QtMocHelpers::SlotData<void(const QString &)>(26, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
+        }}),
+        // Slot 'onAuthButtonClicked'
+        QtMocHelpers::SlotData<void()>(27, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'handleLoggedOut'
-        QtMocHelpers::SlotData<void(const QString &)>(18, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 19 },
+        QtMocHelpers::SlotData<void(const QString &)>(28, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -121,8 +160,17 @@ void UserInfoWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 4: _t->onTradingStatsLoaded((*reinterpret_cast< std::add_pointer_t<TradingStats>>(_a[1]))); break;
         case 5: _t->onRefreshClicked(); break;
         case 6: _t->onEditPersonalInfoClicked(); break;
-        case 7: _t->onAuthButtonClicked(); break;
-        case 8: _t->handleLoggedOut((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 7: _t->onChangePasswordClicked(); break;
+        case 8: _t->onDepositClicked(); break;
+        case 9: _t->onWithdrawClicked(); break;
+        case 10: _t->onDepositSuccess((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 11: _t->onDepositFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 12: _t->onWithdrawSuccess((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 13: _t->onWithdrawFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 14: _t->onPasswordChangeSuccess((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 15: _t->onPasswordChangeFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 16: _t->onAuthButtonClicked(); break;
+        case 17: _t->handleLoggedOut((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
         default: ;
         }
     }
@@ -184,14 +232,14 @@ int UserInfoWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 9)
+        if (_id < 18)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 9;
+        _id -= 18;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 9)
+        if (_id < 18)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 9;
+        _id -= 18;
     }
     return _id;
 }

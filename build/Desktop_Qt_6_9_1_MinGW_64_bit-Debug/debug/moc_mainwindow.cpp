@@ -8,6 +8,7 @@
 
 #include "../../../head/mainwindow.h"
 #include <QtGui/qtextcursor.h>
+#include <QtNetwork/QSslError>
 #include <QtCore/qmetatype.h>
 #include <QtCore/QList>
 
@@ -44,9 +45,12 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "onQuery",
         "",
         "onPlaceOrder",
-        "onOrderDoubleClicked",
-        "row",
-        "column",
+        "onOrderContextMenu",
+        "pos",
+        "onFillOrder",
+        "onStatusFilterChanged",
+        "text",
+        "onThemeToggled",
         "handleQuoteUpdated",
         "symbol",
         "lastPrice",
@@ -72,40 +76,48 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onPlaceOrder'
         QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onOrderDoubleClicked'
-        QtMocHelpers::SlotData<void(int, int)>(4, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 5 }, { QMetaType::Int, 6 },
+        // Slot 'onOrderContextMenu'
+        QtMocHelpers::SlotData<void(const QPoint &)>(4, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QPoint, 5 },
         }}),
+        // Slot 'onFillOrder'
+        QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onStatusFilterChanged'
+        QtMocHelpers::SlotData<void(const QString &)>(7, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 8 },
+        }}),
+        // Slot 'onThemeToggled'
+        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'handleQuoteUpdated'
-        QtMocHelpers::SlotData<void(const QString &, double)>(7, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 8 }, { QMetaType::Double, 9 },
+        QtMocHelpers::SlotData<void(const QString &, double)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 11 }, { QMetaType::Double, 12 },
         }}),
         // Slot 'handleOrderPlaced'
-        QtMocHelpers::SlotData<void(const OrderInfo &)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 11, 12 },
+        QtMocHelpers::SlotData<void(const OrderInfo &)>(13, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 14, 15 },
         }}),
         // Slot 'handleOrderUpdated'
-        QtMocHelpers::SlotData<void(const OrderInfo &)>(13, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 11, 12 },
+        QtMocHelpers::SlotData<void(const OrderInfo &)>(16, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 14, 15 },
         }}),
         // Slot 'handleOrderHistoryLoaded'
-        QtMocHelpers::SlotData<void(const QVector<OrderInfo> &)>(14, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 15, 16 },
+        QtMocHelpers::SlotData<void(const QVector<OrderInfo> &)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 18, 19 },
         }}),
         // Slot 'handleOrderRejected'
-        QtMocHelpers::SlotData<void(const QString &)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 18 },
+        QtMocHelpers::SlotData<void(const QString &)>(20, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 21 },
         }}),
         // Slot 'handlePositionsLoaded'
-        QtMocHelpers::SlotData<void(const QVector<PositionInfo> &)>(19, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 20, 21 },
+        QtMocHelpers::SlotData<void(const QVector<PositionInfo> &)>(22, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 23, 24 },
         }}),
         // Slot 'handleLoggedOut'
-        QtMocHelpers::SlotData<void(const QString &)>(22, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 23 },
+        QtMocHelpers::SlotData<void(const QString &)>(25, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 26 },
         }}),
         // Slot 'handleAccountFrozen'
-        QtMocHelpers::SlotData<void()>(24, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(27, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -131,15 +143,18 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         switch (_id) {
         case 0: _t->onQuery(); break;
         case 1: _t->onPlaceOrder(); break;
-        case 2: _t->onOrderDoubleClicked((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[2]))); break;
-        case 3: _t->handleQuoteUpdated((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<double>>(_a[2]))); break;
-        case 4: _t->handleOrderPlaced((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
-        case 5: _t->handleOrderUpdated((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
-        case 6: _t->handleOrderHistoryLoaded((*reinterpret_cast< std::add_pointer_t<QList<OrderInfo>>>(_a[1]))); break;
-        case 7: _t->handleOrderRejected((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 8: _t->handlePositionsLoaded((*reinterpret_cast< std::add_pointer_t<QList<PositionInfo>>>(_a[1]))); break;
-        case 9: _t->handleLoggedOut((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 10: _t->handleAccountFrozen(); break;
+        case 2: _t->onOrderContextMenu((*reinterpret_cast< std::add_pointer_t<QPoint>>(_a[1]))); break;
+        case 3: _t->onFillOrder(); break;
+        case 4: _t->onStatusFilterChanged((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 5: _t->onThemeToggled(); break;
+        case 6: _t->handleQuoteUpdated((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<double>>(_a[2]))); break;
+        case 7: _t->handleOrderPlaced((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
+        case 8: _t->handleOrderUpdated((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
+        case 9: _t->handleOrderHistoryLoaded((*reinterpret_cast< std::add_pointer_t<QList<OrderInfo>>>(_a[1]))); break;
+        case 10: _t->handleOrderRejected((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 11: _t->handlePositionsLoaded((*reinterpret_cast< std::add_pointer_t<QList<PositionInfo>>>(_a[1]))); break;
+        case 12: _t->handleLoggedOut((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 13: _t->handleAccountFrozen(); break;
         default: ;
         }
     }
@@ -164,14 +179,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 11)
+        if (_id < 14)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 14;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 11)
+        if (_id < 14)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 11;
+        _id -= 14;
     }
     return _id;
 }

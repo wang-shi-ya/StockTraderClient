@@ -6,14 +6,36 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
-    <height>228</height>
+    <width>399</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Login / Register</string>
+   <string>股票交易客户端 - 登录/注册</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>20</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="labelTitle">
+     <property name="styleSheet">
+      <string>font-size: 24px;
+        font-weight: bold;
+        color: #1E88E5;
+        margin-bottom: 10px;</string>
+     </property>
+     <property name="text">
+      <string>股票交易客户端</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
@@ -24,6 +46,9 @@
        <string>登录</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayoutLogin">
+       <property name="spacing">
+        <number>12</number>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="labelUserLogin">
          <property name="text">
@@ -32,7 +57,11 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineUserLogin"/>
+        <widget class="QLineEdit" name="lineUserLogin">
+         <property name="placeholderText">
+          <string>请输入用户名</string>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelPwdLogin">
@@ -45,6 +74,9 @@
         <widget class="QLineEdit" name="linePwdLogin">
          <property name="echoMode">
           <enum>QLineEdit::EchoMode::Password</enum>
+         </property>
+         <property name="placeholderText">
+          <string>请输入密码</string>
          </property>
         </widget>
        </item>
@@ -65,24 +97,27 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="placeholderText">
+            <string>验证码</string>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="labelCaptchaCode">
            <property name="minimumSize">
             <size>
-             <width>80</width>
-             <height>30</height>
+             <width>100</width>
+             <height>36</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>80</width>
-             <height>30</height>
+             <width>100</width>
+             <height>36</height>
             </size>
            </property>
            <property name="styleSheet">
-            <string>background-color: #f0f0f0; border: 1px solid #ccc; font-size: 18px; font-weight: bold; color: #333;</string>
+            <string>background-color: #f0f0f0; border: 1px solid #ddd; font-size: 18px; font-weight: bold; color: #333; border-radius: 4px;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -105,6 +140,9 @@
        <string>注册</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayoutRegister">
+       <property name="spacing">
+        <number>10</number>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="labelUserReg">
          <property name="text">
@@ -113,7 +151,11 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineUserReg"/>
+        <widget class="QLineEdit" name="lineUserReg">
+         <property name="placeholderText">
+          <string>请输入用户名</string>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelPwdReg">
@@ -127,6 +169,9 @@
          <property name="echoMode">
           <enum>QLineEdit::EchoMode::Password</enum>
          </property>
+         <property name="placeholderText">
+          <string>请输入密码</string>
+         </property>
         </widget>
        </item>
        <item row="2" column="0">
@@ -137,7 +182,11 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="lineRealNameReg"/>
+        <widget class="QLineEdit" name="lineRealNameReg">
+         <property name="placeholderText">
+          <string>请输入真实姓名</string>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="labelEmailReg">
@@ -147,7 +196,11 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEmailReg"/>
+        <widget class="QLineEdit" name="lineEmailReg">
+         <property name="placeholderText">
+          <string>请输入邮箱</string>
+         </property>
+        </widget>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="labelPhoneReg">
@@ -157,7 +210,11 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLineEdit" name="linePhoneReg"/>
+        <widget class="QLineEdit" name="linePhoneReg">
+         <property name="placeholderText">
+          <string>请输入手机号</string>
+         </property>
+        </widget>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="labelIdCardReg">
@@ -167,7 +224,11 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QLineEdit" name="lineIdCardReg"/>
+        <widget class="QLineEdit" name="lineIdCardReg">
+         <property name="placeholderText">
+          <string>请输入身份证号</string>
+         </property>
+        </widget>
        </item>
        <item row="6" column="0">
         <widget class="QLabel" name="labelAddressReg">
@@ -177,7 +238,11 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QLineEdit" name="lineAddressReg"/>
+        <widget class="QLineEdit" name="lineAddressReg">
+         <property name="placeholderText">
+          <string>请输入地址</string>
+         </property>
+        </widget>
        </item>
        <item row="7" column="0" colspan="2">
         <widget class="QPushButton" name="btnRegister">

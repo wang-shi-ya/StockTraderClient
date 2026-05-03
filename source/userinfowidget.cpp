@@ -3,13 +3,18 @@
 #include "edituserinfodialog.h"
 #include "logindialog.h"
 #include "client.h"
+#include "themehelper.h"
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QApplication>
 #include <QPalette>
 #include <QDebug>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QDialog>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QLabel>
 
 UserInfoWidget::UserInfoWidget(UserService *userService, Client *client, QWidget *parent)
     : QWidget(parent)
@@ -24,19 +29,29 @@ UserInfoWidget::UserInfoWidget(UserService *userService, Client *client, QWidget
     m_tabWidget = ui->tabWidget;
     m_refreshButton = ui->refreshButton;
     m_userNameLabel = ui->userNameLabel;
+    m_depositButton = ui->depositButton;
+    m_withdrawButton = ui->withdrawButton;
     
     // 创建编辑个人信息按钮
     m_editPersonalInfoButton = new QPushButton(QString::fromUtf8("编辑个人信息"), this);
     m_editPersonalInfoButton->setObjectName("editPersonalInfoButton");
-    
-    // 将编辑按钮添加到控制布局中
+
+    // 创建修改密码按钮
+    m_changePasswordButton = new QPushButton(QString::fromUtf8("修改密码"), this);
+    m_changePasswordButton->setObjectName("changePasswordButton");
+
+    // 将编辑按钮和修改密码按钮添加到控制布局中
     QHBoxLayout *controlLayout = qobject_cast<QHBoxLayout*>(ui->controlLayout);
     if (controlLayout) {
         controlLayout->insertWidget(1, m_editPersonalInfoButton); // 插入到刷新按钮之前
+        controlLayout->insertWidget(2, m_changePasswordButton);
     }
-    
+
     // 连接按钮信号
     connect(m_editPersonalInfoButton, &QPushButton::clicked, this, &UserInfoWidget::onEditPersonalInfoClicked);
+    connect(m_changePasswordButton, &QPushButton::clicked, this, &UserInfoWidget::onChangePasswordClicked);
+    connect(m_depositButton, &QPushButton::clicked, this, &UserInfoWidget::onDepositClicked);
+    connect(m_withdrawButton, &QPushButton::clicked, this, &UserInfoWidget::onWithdrawClicked);
     
     // 登录/注册 与 退出登录 共用同一按钮，文案随登录状态变化
     if (ui->logoutButton) {
@@ -68,8 +83,15 @@ UserInfoWidget::UserInfoWidget(UserService *userService, Client *client, QWidget
     // 连接用户服务信号
     connect(m_userService, &UserService::userInfoLoaded, this, &UserInfoWidget::onUserInfoLoaded);
     connect(m_userService, &UserService::accountInfoLoaded, this, &UserInfoWidget::onAccountInfoLoaded);
+    connect(m_userService, &UserService::accountInfoUpdated, this, &UserInfoWidget::onAccountInfoLoaded);
     connect(m_userService, &UserService::cashFlowRecordsLoaded, this, &UserInfoWidget::onCashFlowRecordsLoaded);
     connect(m_userService, &UserService::tradingStatsLoaded, this, &UserInfoWidget::onTradingStatsLoaded);
+    connect(m_userService, &UserService::depositSuccess, this, &UserInfoWidget::onDepositSuccess);
+    connect(m_userService, &UserService::depositFailed, this, &UserInfoWidget::onDepositFailed);
+    connect(m_userService, &UserService::withdrawSuccess, this, &UserInfoWidget::onWithdrawSuccess);
+    connect(m_userService, &UserService::withdrawFailed, this, &UserInfoWidget::onWithdrawFailed);
+    connect(m_userService, &UserService::passwordChangeSuccess, this, &UserInfoWidget::onPasswordChangeSuccess);
+    connect(m_userService, &UserService::passwordChangeFailed, this, &UserInfoWidget::onPasswordChangeFailed);
     
     // 连接UI信号
     connect(m_refreshButton, &QPushButton::clicked, this, &UserInfoWidget::onRefreshClicked);
@@ -92,6 +114,8 @@ UserInfoWidget::UserInfoWidget(UserService *userService, Client *client, QWidget
     }
 
     updateAuthButton();
+
+    connect(ThemeHelper::instance(), &ThemeHelper::themeChanged, this, &UserInfoWidget::refreshTheme);
 }
 
 UserInfoWidget::~UserInfoWidget() {
@@ -155,6 +179,7 @@ void UserInfoWidget::setupPersonalInfoTab() {
     m_personalTable->setHorizontalHeaderLabels({"项目", "信息"});
     m_personalTable->setAlternatingRowColors(true);
     m_personalTable->horizontalHeader()->setStretchLastSection(true);
+    m_personalTable->verticalHeader()->setVisible(false);
     m_personalTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_personalTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
@@ -162,12 +187,13 @@ void UserInfoWidget::setupPersonalInfoTab() {
 void UserInfoWidget::setupAssetTab() {
     // 设置样式
     m_totalAssetsLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #2E8B57;");
-    
+
     // 设置资产明细表格
     m_assetTable->setColumnCount(4);
     m_assetTable->setHorizontalHeaderLabels({"项目", "金额", "占比", "说明"});
     m_assetTable->setAlternatingRowColors(true);
     m_assetTable->horizontalHeader()->setStretchLastSection(true);
+    m_assetTable->verticalHeader()->setVisible(false);
     m_assetTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_assetTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
@@ -175,12 +201,13 @@ void UserInfoWidget::setupAssetTab() {
 void UserInfoWidget::setupTradingTab() {
     // 设置样式
     m_winRateLabel->setStyleSheet("font-size: 16px; font-weight: bold;");
-    
+
     // 交易统计表格
     m_tradingStatsTable->setColumnCount(2);
     m_tradingStatsTable->setHorizontalHeaderLabels({"统计项目", "数值"});
     m_tradingStatsTable->setAlternatingRowColors(true);
     m_tradingStatsTable->horizontalHeader()->setStretchLastSection(true);
+    m_tradingStatsTable->verticalHeader()->setVisible(false);
     m_tradingStatsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_tradingStatsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
@@ -190,6 +217,7 @@ void UserInfoWidget::setupRecordsTab() {
     m_cashFlowTable->setHorizontalHeaderLabels({"时间", "类型", "金额", "余额", "描述", "状态"});
     m_cashFlowTable->setAlternatingRowColors(true);
     m_cashFlowTable->horizontalHeader()->setStretchLastSection(true);
+    m_cashFlowTable->verticalHeader()->setVisible(false);
     m_cashFlowTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_cashFlowTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
@@ -270,20 +298,241 @@ void UserInfoWidget::onEditPersonalInfoClicked() {
     }
 }
 
+void UserInfoWidget::onChangePasswordClicked()
+{
+    if (m_currentUser.isEmpty()) {
+        QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("未登录，无法修改密码"));
+        return;
+    }
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(QString::fromUtf8("修改密码"));
+    dlg.setFixedSize(380, 240);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dlg);
+
+    QHBoxLayout *oldPwdLayout = new QHBoxLayout();
+    QLabel *oldPwdLabel = new QLabel(QString::fromUtf8("原密码:"), &dlg);
+    QLineEdit *oldPwdEdit = new QLineEdit(&dlg);
+    oldPwdEdit->setEchoMode(QLineEdit::Password);
+    oldPwdEdit->setPlaceholderText(QString::fromUtf8("请输入原密码"));
+    oldPwdLayout->addWidget(oldPwdLabel);
+    oldPwdLayout->addWidget(oldPwdEdit);
+    layout->addLayout(oldPwdLayout);
+
+    QHBoxLayout *newPwdLayout = new QHBoxLayout();
+    QLabel *newPwdLabel = new QLabel(QString::fromUtf8("新密码:"), &dlg);
+    QLineEdit *newPwdEdit = new QLineEdit(&dlg);
+    newPwdEdit->setEchoMode(QLineEdit::Password);
+    newPwdEdit->setPlaceholderText(QString::fromUtf8("至少6位"));
+    newPwdLayout->addWidget(newPwdLabel);
+    newPwdLayout->addWidget(newPwdEdit);
+    layout->addLayout(newPwdLayout);
+
+    QHBoxLayout *confirmPwdLayout = new QHBoxLayout();
+    QLabel *confirmPwdLabel = new QLabel(QString::fromUtf8("确认密码:"), &dlg);
+    QLineEdit *confirmPwdEdit = new QLineEdit(&dlg);
+    confirmPwdEdit->setEchoMode(QLineEdit::Password);
+    confirmPwdEdit->setPlaceholderText(QString::fromUtf8("再次输入新密码"));
+    confirmPwdLayout->addWidget(confirmPwdLabel);
+    confirmPwdLayout->addWidget(confirmPwdEdit);
+    layout->addLayout(confirmPwdLayout);
+
+    layout->addSpacing(10);
+
+    QHBoxLayout *btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+    QPushButton *confirmBtn = new QPushButton(QString::fromUtf8("确认修改"), &dlg);
+    QPushButton *cancelBtn = new QPushButton(QString::fromUtf8("取消"), &dlg);
+    btnLayout->addWidget(confirmBtn);
+    btnLayout->addWidget(cancelBtn);
+    layout->addLayout(btnLayout);
+
+    connect(confirmBtn, &QPushButton::clicked, &dlg, &QDialog::accept);
+    connect(cancelBtn, &QPushButton::clicked, &dlg, &QDialog::reject);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        QString oldPassword = oldPwdEdit->text();
+        QString newPassword = newPwdEdit->text();
+        QString confirmPassword = confirmPwdEdit->text();
+
+        if (oldPassword.isEmpty()) {
+            QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("请输入原密码"));
+            return;
+        }
+        if (newPassword.isEmpty()) {
+            QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("请输入新密码"));
+            return;
+        }
+        if (newPassword.length() < 6) {
+            QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("新密码长度至少6位"));
+            return;
+        }
+        if (newPassword != confirmPassword) {
+            QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("两次输入的新密码不一致"));
+            return;
+        }
+        if (oldPassword == newPassword) {
+            QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("新密码不能与原密码相同"));
+            return;
+        }
+
+        m_userService->changePassword(oldPassword, newPassword);
+    }
+}
+
+void UserInfoWidget::onDepositClicked()
+{
+    if (m_currentUser.isEmpty()) {
+        QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("请先登录"));
+        return;
+    }
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(QString::fromUtf8("充值"));
+    dlg.setFixedSize(360, 220);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dlg);
+
+    QLabel *infoLabel = new QLabel(QString::fromUtf8("当前可用资金: %1")
+        .arg(formatMoney(m_userService->getAccountInfo(m_currentUser).availableCash)), &dlg);
+    layout->addWidget(infoLabel);
+
+    QHBoxLayout *inputLayout = new QHBoxLayout();
+    QLabel *amountLabel = new QLabel(QString::fromUtf8("充值金额:"), &dlg);
+    QDoubleSpinBox *amountSpin = new QDoubleSpinBox(&dlg);
+    amountSpin->setRange(0.01, 99999999.99);
+    amountSpin->setDecimals(2);
+    amountSpin->setValue(1000.00);
+    amountSpin->setPrefix("¥ ");
+    inputLayout->addWidget(amountLabel);
+    inputLayout->addWidget(amountSpin);
+    layout->addLayout(inputLayout);
+
+    QHBoxLayout *descLayout = new QHBoxLayout();
+    QLabel *descLabel = new QLabel(QString::fromUtf8("备注:"), &dlg);
+    QLineEdit *descEdit = new QLineEdit(&dlg);
+    descEdit->setPlaceholderText(QString::fromUtf8("可选备注"));
+    descLayout->addWidget(descLabel);
+    descLayout->addWidget(descEdit);
+    layout->addLayout(descLayout);
+
+    QHBoxLayout *btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+    QPushButton *confirmBtn = new QPushButton(QString::fromUtf8("确认充值"), &dlg);
+    QPushButton *cancelBtn = new QPushButton(QString::fromUtf8("取消"), &dlg);
+    btnLayout->addWidget(confirmBtn);
+    btnLayout->addWidget(cancelBtn);
+    layout->addLayout(btnLayout);
+
+    connect(confirmBtn, &QPushButton::clicked, &dlg, &QDialog::accept);
+    connect(cancelBtn, &QPushButton::clicked, &dlg, &QDialog::reject);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        double amount = amountSpin->value();
+        QString desc = descEdit->text().trimmed();
+        m_userService->deposit(amount, desc);
+    }
+}
+
+void UserInfoWidget::onWithdrawClicked()
+{
+    if (m_currentUser.isEmpty()) {
+        QMessageBox::warning(this, QString::fromUtf8("错误"), QString::fromUtf8("请先登录"));
+        return;
+    }
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(QString::fromUtf8("提现"));
+    dlg.setFixedSize(360, 220);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dlg);
+
+    QLabel *infoLabel = new QLabel(QString::fromUtf8("当前可用资金: %1")
+        .arg(formatMoney(m_userService->getAccountInfo(m_currentUser).availableCash)), &dlg);
+    layout->addWidget(infoLabel);
+
+    QHBoxLayout *inputLayout = new QHBoxLayout();
+    QLabel *amountLabel = new QLabel(QString::fromUtf8("提现金额:"), &dlg);
+    QDoubleSpinBox *amountSpin = new QDoubleSpinBox(&dlg);
+    amountSpin->setRange(0.01, 99999999.99);
+    amountSpin->setDecimals(2);
+    amountSpin->setValue(500.00);
+    amountSpin->setPrefix("¥ ");
+    inputLayout->addWidget(amountLabel);
+    inputLayout->addWidget(amountSpin);
+    layout->addLayout(inputLayout);
+
+    QHBoxLayout *descLayout = new QHBoxLayout();
+    QLabel *descLabel = new QLabel(QString::fromUtf8("备注:"), &dlg);
+    QLineEdit *descEdit = new QLineEdit(&dlg);
+    descEdit->setPlaceholderText(QString::fromUtf8("可选备注"));
+    descLayout->addWidget(descLabel);
+    descLayout->addWidget(descEdit);
+    layout->addLayout(descLayout);
+
+    QHBoxLayout *btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+    QPushButton *confirmBtn = new QPushButton(QString::fromUtf8("确认提现"), &dlg);
+    QPushButton *cancelBtn = new QPushButton(QString::fromUtf8("取消"), &dlg);
+    btnLayout->addWidget(confirmBtn);
+    btnLayout->addWidget(cancelBtn);
+    layout->addLayout(btnLayout);
+
+    connect(confirmBtn, &QPushButton::clicked, &dlg, &QDialog::accept);
+    connect(cancelBtn, &QPushButton::clicked, &dlg, &QDialog::reject);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        double amount = amountSpin->value();
+        QString desc = descEdit->text().trimmed();
+        m_userService->withdraw(amount, desc);
+    }
+}
+
+void UserInfoWidget::onDepositSuccess(const QString &message)
+{
+    QMessageBox::information(this, QString::fromUtf8("充值结果"), message);
+    refreshData();
+}
+
+void UserInfoWidget::onDepositFailed(const QString &message)
+{
+    QMessageBox::warning(this, QString::fromUtf8("充值失败"), message);
+}
+
+void UserInfoWidget::onWithdrawSuccess(const QString &message)
+{
+    QMessageBox::information(this, QString::fromUtf8("提现结果"), message);
+    refreshData();
+}
+
+void UserInfoWidget::onWithdrawFailed(const QString &message)
+{
+    QMessageBox::warning(this, QString::fromUtf8("提现失败"), message);
+}
+
+void UserInfoWidget::onPasswordChangeSuccess(const QString &message)
+{
+    QMessageBox::information(this, QString::fromUtf8("修改密码"), message);
+}
+
+void UserInfoWidget::onPasswordChangeFailed(const QString &message)
+{
+    QMessageBox::warning(this, QString::fromUtf8("修改密码失败"), message);
+}
+
 void UserInfoWidget::updatePersonalInfo(const UserInfo &userInfo) {
+    m_personalTable->setUpdatesEnabled(false);
     m_personalTable->setRowCount(9);
-    
+
     QStringList labels = {
-        "账号", "密码", "姓名", "邮箱", "电话", 
+        "账号", "密码", "姓名", "邮箱", "电话",
         "身份证号", "地址", "注册时间", "最后登录"
     };
-    
-    // 密码用小黑点遮盖
+
     QString passwordDisplay = "●●●●●●";
-    
-    // 确保用户名不为空，如果为空则使用当前用户
     QString displayUsername = userInfo.username.isEmpty() ? m_currentUser : userInfo.username;
-    
+
     QStringList values = {
         displayUsername.isEmpty() ? "未知" : displayUsername,
         passwordDisplay,
@@ -295,17 +544,17 @@ void UserInfoWidget::updatePersonalInfo(const UserInfo &userInfo) {
         userInfo.registerTime.isValid() ? userInfo.registerTime.toString("yyyy-MM-dd hh:mm:ss") : "未知",
         userInfo.lastLoginTime.isValid() ? userInfo.lastLoginTime.toString("yyyy-MM-dd hh:mm:ss") : "未知"
     };
-    
+
     for (int i = 0; i < labels.size(); ++i) {
         m_personalTable->setItem(i, 0, new QTableWidgetItem(labels[i]));
         QTableWidgetItem *valueItem = new QTableWidgetItem(values[i]);
-        // 如果是密码字段，设置为不可编辑
         if (labels[i] == "密码") {
             valueItem->setFlags(valueItem->flags() & ~Qt::ItemIsEditable);
         }
         m_personalTable->setItem(i, 1, valueItem);
     }
-    
+    m_personalTable->setUpdatesEnabled(true);
+
     qDebug() << "Updated personal info for user:" << displayUsername;
 }
 
@@ -328,8 +577,9 @@ void UserInfoWidget::updateAssetInfo(const AccountInfo &accountInfo) {
     m_profitLossBar->setValue(progressValue);
     
     // 更新资产明细表格
+    m_assetTable->setUpdatesEnabled(false);
     m_assetTable->setRowCount(4);
-    
+
     QStringList items = {"可用资金", "冻结资金", "持仓市值", "总资产"};
     QVector<double> amounts = {
         accountInfo.availableCash,
@@ -343,15 +593,16 @@ void UserInfoWidget::updateAssetInfo(const AccountInfo &accountInfo) {
         "当前持仓的市值",
         "账户总资产"
     };
-    
+
     for (int i = 0; i < items.size(); ++i) {
         m_assetTable->setItem(i, 0, new QTableWidgetItem(items[i]));
         m_assetTable->setItem(i, 1, new QTableWidgetItem(formatMoney(amounts[i])));
-        
+
         double percentage = accountInfo.totalAssets > 0 ? (amounts[i] / accountInfo.totalAssets * 100) : 0;
         m_assetTable->setItem(i, 2, new QTableWidgetItem(formatPercent(percentage)));
         m_assetTable->setItem(i, 3, new QTableWidgetItem(descriptions[i]));
     }
+    m_assetTable->setUpdatesEnabled(true);
 }
 
 void UserInfoWidget::updateTradingStats(const TradingStats &stats) {
@@ -360,13 +611,14 @@ void UserInfoWidget::updateTradingStats(const TradingStats &stats) {
     m_winRateBar->setValue(static_cast<int>(stats.winRate));
     
     // 更新统计表格
+    m_tradingStatsTable->setUpdatesEnabled(false);
     m_tradingStatsTable->setRowCount(8);
-    
+
     QStringList labels = {
         "总交易次数", "买入次数", "卖出次数", "总交易量",
         "总交易金额", "总盈亏", "胜率", "最后交易时间"
     };
-    
+
     QStringList values = {
         QString::number(stats.totalTrades),
         QString::number(stats.buyTrades),
@@ -377,36 +629,37 @@ void UserInfoWidget::updateTradingStats(const TradingStats &stats) {
         formatPercent(stats.winRate),
         stats.lastTradeTime.toString("yyyy-MM-dd hh:mm:ss")
     };
-    
+
     for (int i = 0; i < labels.size(); ++i) {
         m_tradingStatsTable->setItem(i, 0, new QTableWidgetItem(labels[i]));
         m_tradingStatsTable->setItem(i, 1, new QTableWidgetItem(values[i]));
-        
-        // 设置盈亏颜色
+
         if (labels[i] == "总盈亏") {
             QColor color = stats.totalProfit >= 0 ? QColor(255, 0, 0) : QColor(0, 255, 0);
             m_tradingStatsTable->item(i, 1)->setForeground(color);
         }
     }
+    m_tradingStatsTable->setUpdatesEnabled(true);
 }
 
 void UserInfoWidget::updateCashFlowRecords(const QVector<CashFlowRecord> &records) {
+    m_cashFlowTable->setUpdatesEnabled(false);
     m_cashFlowTable->setRowCount(records.size());
-    
+
     for (int i = 0; i < records.size(); ++i) {
         const CashFlowRecord &record = records[i];
-        
+
         m_cashFlowTable->setItem(i, 0, new QTableWidgetItem(record.createTime.toString("MM-dd hh:mm")));
         m_cashFlowTable->setItem(i, 1, new QTableWidgetItem(record.type));
         m_cashFlowTable->setItem(i, 2, new QTableWidgetItem(formatMoney(record.amount)));
         m_cashFlowTable->setItem(i, 3, new QTableWidgetItem(formatMoney(record.balance)));
         m_cashFlowTable->setItem(i, 4, new QTableWidgetItem(record.description));
         m_cashFlowTable->setItem(i, 5, new QTableWidgetItem(record.status));
-        
-        // 设置金额颜色
+
         QColor color = record.amount >= 0 ? QColor(255, 0, 0) : QColor(0, 255, 0);
         m_cashFlowTable->item(i, 2)->setForeground(color);
     }
+    m_cashFlowTable->setUpdatesEnabled(true);
 }
 
 QString UserInfoWidget::formatMoney(double amount) const {
@@ -442,3 +695,9 @@ void UserInfoWidget::handleLoggedOut(const QString & /*message*/) {
 }
 
 // handleAccountFrozen 已移除，由 MainWindow 统一处理账号冻结逻辑
+
+void UserInfoWidget::refreshTheme() {
+    bool dark = ThemeHelper::isDarkMode();
+    m_totalAssetsLabel->setStyleSheet(
+        QString("font-size: 18px; font-weight: bold; color: %1;").arg(dark ? "#66bb6a" : "#2E8B57"));
+}

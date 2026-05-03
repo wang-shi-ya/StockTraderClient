@@ -54,6 +54,10 @@ public:
     QLabel *labelProfitLoss;
     QLabel *profitLossLabel;
     QProgressBar *profitLossBar;
+    QHBoxLayout *transactionLayout;
+    QPushButton *depositButton;
+    QPushButton *withdrawButton;
+    QSpacerItem *transactionSpacer;
     QTableWidget *assetTable;
     QWidget *tradingTab;
     QVBoxLayout *tradingLayout;
@@ -182,6 +186,25 @@ public:
 
         assetLayout->addWidget(overviewGroup);
 
+        transactionLayout = new QHBoxLayout();
+        transactionLayout->setObjectName("transactionLayout");
+        depositButton = new QPushButton(assetTab);
+        depositButton->setObjectName("depositButton");
+
+        transactionLayout->addWidget(depositButton);
+
+        withdrawButton = new QPushButton(assetTab);
+        withdrawButton->setObjectName("withdrawButton");
+
+        transactionLayout->addWidget(withdrawButton);
+
+        transactionSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+        transactionLayout->addItem(transactionSpacer);
+
+
+        assetLayout->addLayout(transactionLayout);
+
         assetTable = new QTableWidget(assetTab);
         assetTable->setObjectName("assetTable");
         assetTable->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
@@ -270,6 +293,8 @@ public:
         marketValueLabel->setText(QCoreApplication::translate("UserInfoWidget", "\302\2450.00", nullptr));
         labelProfitLoss->setText(QCoreApplication::translate("UserInfoWidget", "\346\265\256\345\212\250\347\233\210\344\272\217:", nullptr));
         profitLossLabel->setText(QCoreApplication::translate("UserInfoWidget", "\302\2450.00 (0.00%)", nullptr));
+        depositButton->setText(QCoreApplication::translate("UserInfoWidget", "\345\205\205\345\200\274", nullptr));
+        withdrawButton->setText(QCoreApplication::translate("UserInfoWidget", "\346\217\220\347\216\260", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(assetTab), QCoreApplication::translate("UserInfoWidget", "\350\265\204\344\272\247\344\277\241\346\201\257", nullptr));
         statsGroup->setTitle(QCoreApplication::translate("UserInfoWidget", "\344\272\244\346\230\223\347\273\237\350\256\241", nullptr));
         labelWinRate->setText(QCoreApplication::translate("UserInfoWidget", "\350\203\234\347\216\207:", nullptr));

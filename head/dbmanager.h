@@ -1,51 +1,77 @@
 #pragma once
 
 #include <QObject>
-#include <QSqlDatabase>
 #include <QString>
 #include <QStringList>
-#include "dbconnectionpool.h"
+#include <QDateTime>
+#include <QMap>
+#include <QJsonObject>
 
-class DbManager : public QObject {
-	Q_OBJECT
+class DbManager : public QObject
+{
+    Q_OBJECT
+
 public:
-	explicit DbManager(QObject *parent = nullptr);
-	~DbManager() override;
+    explicit DbManager(QObject *parent = nullptr);
+    ~DbManager() override = default;
 
-	bool initialize();
-	QSqlDatabase database();
-	bool ensureConnection();
-	void releaseConnection(); // 释放连接（连接池模式）
-	void setUsePool(bool usePool) { m_usePool = usePool; } // 设置是否使用连接池
+    void initialize();
+    bool isInitialized() const { return m_initialized; }
 
-	// schema
-	bool ensureSchema();
+    // Sync cache-based getters — safe to call anytime after initialize() completes
+    QString getStockName(const QString &symbol) const;
+    QStringList getAllStockSymbols() const;
+    QStringList getAllCompanySymbols() const;
+    bool companyInfoExists(const QString &symbol) const;
 
-	// Company info methods
-	bool saveCompanyInfo(const QString &symbol, const QString &name, const QString &industry, 
-	                     const QString &sector, double totalShares, double circulatingShares,
-	                     double marketCap, double circulatingCap, double pe, double pb, 
-	                     double roe, double revenue, double netProfit, const QDateTime &reportDate);
-	bool loadCompanyInfo(const QString &symbol, QString &name, QString &industry, QString &sector,
-	                     double &totalShares, double &circulatingShares, double &marketCap,
-	                     double &circulatingCap, double &pe, double &pb, double &roe,
-	                     double &revenue, double &netProfit, QDateTime &reportDate);
-	bool companyInfoExists(const QString &symbol);
-	QStringList getAllCompanySymbols();
+    // Async HTTP methods — results delivered via signals
+    void loadCompanyInfo(const QString &symbol);
+    void saveCompanyInfo(const QString &symbol, const QString &name, const QString &industry,
+                         const QString &sector, double totalShares, double circulatingShares,
+                         double marketCap, double circulatingCap, double pe, double pb,
+                         double roe, double revenue, double netProfit, const QDateTime &reportDate);
+    void getCompanyAnnouncements(const QString &symbol);
 
-	// User info methods
-	bool saveUserInfo(const QString &username, const QString &realName, const QString &email,
-	                  const QString &phone, const QString &idCard, const QString &address,
-	                  const QString &status = "正常");
-	bool loadUserInfo(const QString &username, QString &realName, QString &email,
-	                  QString &phone, QString &idCard, QString &address,
-	                  QDateTime &registerTime, QDateTime &lastLoginTime, QString &status);
-	bool updateLastLoginTime(const QString &username);
+    void loadUserInfo(const QString &username);
+    void saveUserInfo(const QString &username, const QString &realName, const QString &email,
+                      const QString &phone, const QString &idCard, const QString &address,
+                      const QString &status = "正常");
+    void updateLastLoginTime(const QString &username);
+
+    // Watchlist
+    void loadUserWatchedSymbols(const QString &username);
+    void saveUserWatchedSymbol(const QString &username, const QString &symbol);
+    void removeUserWatchedSymbol(const QString &username, const QString &symbol);
+    void clearUserWatchedSymbols(const QString &username);
+
+    // System log (fire-and-forget)
+    void addSystemLog(const QString &operatorName, const QString &operationType, const QString &ipAddress = "");
+
+signals:
+    void initialized(bool success);
+    void errorOccurred(const QString &message);
+
+    // Company info
+    void companyInfoLoaded(const QString &symbol, const QString &name, const QString &industry,
+                           const QString &sector, double totalShares, double circulatingShares,
+                           double marketCap, double circulatingCap, double pe, double pb,
+                           double roe, double revenue, double netProfit, const QDateTime &reportDate);
+    void companyInfoSaved(bool success);
+    void announcementsLoaded(const QString &symbol, const QString &text);
+
+    // User info
+    void userInfoLoaded(const QString &username, const QString &realName, const QString &email,
+                        const QString &phone, const QString &idCard, const QString &address,
+                        const QDateTime &registerTime, const QDateTime &lastLoginTime, const QString &status);
+
+    // Watchlist
+    void watchedSymbolsLoaded(const QString &username, const QStringList &symbols);
 
 private:
-	QSqlDatabase m_db;
-	DbConnectionPool *m_pool;
-	bool m_usePool;
+    void preloadCache();
+    void parseAndEmitCompanyInfo(const QString &symbol, const QJsonObject &data);
+
+    QMap<QString, QString> m_stockNames;
+    QStringList m_allSymbols;
+    bool m_initialized = false;
 };
-
-

@@ -31,9 +31,15 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="symbolInput">
+          <widget class="QComboBox" name="symbolInput">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::NoInsert</enum>
+           </property>
            <property name="placeholderText">
-            <string>输入股票代码，如：000001</string>
+            <string>输入或选择股票代码</string>
            </property>
           </widget>
          </item>
@@ -94,6 +100,16 @@
       </attribute>
       <layout class="QVBoxLayout" name="indexLayout">
        <item>
+        <widget class="QLabel" name="indexTitleLabel">
+         <property name="text">
+          <string>市场指数</string>
+         </property>
+         <property name="styleSheet">
+          <string>font-weight: bold; font-size: 14px; color: #333; padding: 4px 0;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QTableWidget" name="indexTable">
          <property name="alternatingRowColors">
           <bool>true</bool>
@@ -110,6 +126,16 @@
        <string>板块行情</string>
       </attribute>
       <layout class="QVBoxLayout" name="sectorLayout">
+       <item>
+        <widget class="QLabel" name="sectorTitleLabel">
+         <property name="text">
+          <string>板块行情</string>
+         </property>
+         <property name="styleSheet">
+          <string>font-weight: bold; font-size: 14px; color: #333; padding: 4px 0;</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QTableWidget" name="sectorTable">
          <property name="alternatingRowColors">

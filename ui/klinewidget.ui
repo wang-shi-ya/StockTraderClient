@@ -21,7 +21,17 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="symbolCombo"/>
+      <widget class="QComboBox" name="symbolCombo">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="insertPolicy">
+        <enum>QComboBox::NoInsert</enum>
+       </property>
+       <property name="placeholderText">
+        <string>输入或选择股票代码</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="labelPeriod">

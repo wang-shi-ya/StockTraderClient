@@ -51,6 +51,8 @@ public:
 
         symbolCombo = new QComboBox(KLineWidget);
         symbolCombo->setObjectName("symbolCombo");
+        symbolCombo->setEditable(true);
+        symbolCombo->setInsertPolicy(QComboBox::NoInsert);
 
         controlLayout->addWidget(symbolCombo);
 
@@ -101,6 +103,7 @@ public:
     void retranslateUi(QWidget *KLineWidget)
     {
         labelSymbol->setText(QCoreApplication::translate("KLineWidget", "\350\202\241\347\245\250\344\273\243\347\240\201:", nullptr));
+        symbolCombo->setPlaceholderText(QCoreApplication::translate("KLineWidget", "\350\276\223\345\205\245\346\210\226\351\200\211\346\213\251\350\202\241\347\245\250\344\273\243\347\240\201", nullptr));
         labelPeriod->setText(QCoreApplication::translate("KLineWidget", "\345\221\250\346\234\237:", nullptr));
         refreshButton->setText(QCoreApplication::translate("KLineWidget", "\345\210\267\346\226\260", nullptr));
         infoLabel->setText(QCoreApplication::translate("KLineWidget", "K\347\272\277\345\233\276", nullptr));

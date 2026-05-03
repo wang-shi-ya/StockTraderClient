@@ -6,173 +6,424 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>600</height>
+    <width>1000</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>股票交易客户端</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>8</number>
+    </property>
     <item>
-     <layout class="QHBoxLayout" name="quoteLayout">
-      <item>
-       <widget class="QLabel" name="labelSymbol">
-        <property name="text">
-         <string>选择股票</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboSymbol">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnQuery">
-        <property name="text">
-         <string>查询行情</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="labelLast">
-        <property name="text">
-         <string>最新: -</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="orderLayout">
-      <item>
-       <widget class="QLabel" name="labelSide">
-        <property name="text">
-         <string>方向</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboSide">
-        <item>
+     <widget class="QWidget" name="quoteWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string>background-color: white;
+        border-radius: 6px;
+        padding: 10px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="quoteLayout">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="labelSymbol">
          <property name="text">
-          <string>买入</string>
+         
+          <string>选择股票</string>
          </property>
-        </item>
-        <item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboSymbol">
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="minimumWidth">
+          <number>100</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnQuery">
          <property name="text">
-          <string>卖出</string>
+          <string>查询行情</string>
          </property>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="labelQty">
-        <property name="text">
-         <string>数量</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="spinQty">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>1000000</number>
-        </property>
-        <property name="value">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="labelPrice">
-        <property name="text">
-         <string>价格</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDoubleSpinBox" name="spinPrice">
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="minimum">
-         <double>0.000</double>
-        </property>
-        <property name="maximum">
-         <double>1000000.000</double>
-        </property>
-        <property name="value">
-         <double>10.000</double>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnPlace">
-        <property name="text">
-         <string>下单</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QTableWidget" name="tableOrders">
-      <column>
-       <property name="text">
-        <string>订单号</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>代码</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>方向</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>数量</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>价格</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>状态</string>
-       </property>
-      </column>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelLast">
+         <property name="text">
+          <string>最新: -</string>
+         </property>
+         <property name="styleSheet">
+          <string>font-size: 16px;
+            font-weight: bold;
+            color: #1E88E5;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
-     <widget class="QTableWidget" name="tablePositions">
-      <column>
-       <property name="text">
-        <string>代码</string>
+     <widget class="QWidget" name="orderWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string>background-color: white;
+        border-radius: 6px;
+        padding: 10px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="orderLayout">
+       <property name="spacing">
+        <number>8</number>
        </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>持仓数量</string>
+       <item>
+        <widget class="QLabel" name="labelSide">
+         <property name="text">
+          <string>方向</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboSide">
+         <item>
+          <property name="text">
+           <string>买入</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>卖出</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelQty">
+         <property name="text">
+          <string>数量</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinQty">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000000</number>
+         </property>
+         <property name="value">
+          <number>100</number>
+         </property>
+         <property name="minimumWidth">
+          <number>80</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelPrice">
+         <property name="text">
+          <string>价格</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="spinPrice">
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>0.000</double>
+         </property>
+         <property name="maximum">
+          <double>1000000.000</double>
+         </property>
+         <property name="value">
+          <double>10.000</double>
+         </property>
+         <property name="minimumWidth">
+          <number>90</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnPlace">
+         <property name="text">
+          <string>下单</string>
+         </property>
+         <property name="styleSheet">
+          <string>background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 24px;
+            font-size: 14px;
+            font-weight: 500;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="ordersWidget">
+      <property name="styleSheet">
+       <string>background-color: white;
+        border-radius: 6px;
+        padding: 10px;</string>
+      </property>
+      <layout class="QVBoxLayout" name="ordersLayout">
+       <property name="spacing">
+        <number>6</number>
        </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>持仓均价</string>
+       <item>
+        <widget class="QLabel" name="labelOrdersTitle">
+         <property name="text">
+          <string>交易记录</string>
+         </property>
+         <property name="styleSheet">
+          <string>font-size: 15px; font-weight: bold; color: #333; padding: 4px 0;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="ordersFilterWidget">
+         <layout class="QHBoxLayout" name="ordersFilterLayout">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelStatusFilter">
+            <property name="text">
+             <string>状态筛选</string>
+            </property>
+            <property name="styleSheet">
+             <string>font-size: 13px; color: #666;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboStatusFilter">
+            <property name="minimumWidth">
+             <number>90</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>全部</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>New</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Filled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Canceled</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <spacer name="ordersFilterSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+ <item>
+        <widget class="QTableWidget" name="tableOrders">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>订单号</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>代码</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>方向</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>数量</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>价格</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>状态</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>创建时间</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <spacer name="ordersVerticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>1</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="positionsWidget">
+      <property name="styleSheet">
+       <string>background-color: white;
+        border-radius: 6px;
+        padding: 10px;</string>
+      </property>
+      <layout class="QVBoxLayout" name="positionsLayout">
+       <property name="spacing">
+        <number>6</number>
        </property>
-      </column>
+       <item>
+        <widget class="QLabel" name="labelPositionsTitle">
+         <property name="text">
+          <string>持仓</string>
+         </property>
+         <property name="styleSheet">
+          <string>font-size: 15px; font-weight: bold; color: #333; padding: 4px 0;</string>
+         </property>
+        </widget>
+       </item>
+ <item>
+        <widget class="QTableWidget" name="tablePositions">
+         <attribute name="horizontalHeaderVisible">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>代码</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>持仓数量</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>持仓均价</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>当前市价</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>浮动盈亏</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>盈亏比例</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>

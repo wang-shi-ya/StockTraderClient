@@ -8,6 +8,7 @@
 
 #include "../../../head/companywidget.h"
 #include <QtGui/qtextcursor.h>
+#include <QtNetwork/QSslError>
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qtmochelpers.h>
@@ -42,6 +43,8 @@ template <> constexpr inline auto CompanyWidget::qt_create_metaobjectdata<qt_met
         "CompanyWidget",
         "onSymbolChanged",
         "",
+        "onTabChanged",
+        "index",
         "onCompanyInfoReceived",
         "CompanyInfo",
         "info",
@@ -49,6 +52,8 @@ template <> constexpr inline auto CompanyWidget::qt_create_metaobjectdata<qt_met
         "symbol",
         "QMap<QString,QVariant>",
         "data",
+        "onCompanyAnnouncementsReceived",
+        "announcements",
         "onCompanyListUpdated",
         "symbols"
     };
@@ -56,17 +61,25 @@ template <> constexpr inline auto CompanyWidget::qt_create_metaobjectdata<qt_met
     QtMocHelpers::UintData qt_methods {
         // Slot 'onSymbolChanged'
         QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onTabChanged'
+        QtMocHelpers::SlotData<void(int)>(3, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 4 },
+        }}),
         // Slot 'onCompanyInfoReceived'
-        QtMocHelpers::SlotData<void(const CompanyInfo &)>(3, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 4, 5 },
+        QtMocHelpers::SlotData<void(const CompanyInfo &)>(5, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 6, 7 },
         }}),
         // Slot 'onFinancialDataReceived'
-        QtMocHelpers::SlotData<void(const QString &, const QMap<QString,QVariant> &)>(6, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 7 }, { 0x80000000 | 8, 9 },
+        QtMocHelpers::SlotData<void(const QString &, const QMap<QString,QVariant> &)>(8, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 9 }, { 0x80000000 | 10, 11 },
+        }}),
+        // Slot 'onCompanyAnnouncementsReceived'
+        QtMocHelpers::SlotData<void(const QString &, const QJsonArray &)>(12, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 9 }, { QMetaType::QJsonArray, 13 },
         }}),
         // Slot 'onCompanyListUpdated'
-        QtMocHelpers::SlotData<void(const QStringList &)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QStringList, 11 },
+        QtMocHelpers::SlotData<void(const QStringList &)>(14, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QStringList, 15 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -92,16 +105,18 @@ void CompanyWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: _t->onSymbolChanged(); break;
-        case 1: _t->onCompanyInfoReceived((*reinterpret_cast< std::add_pointer_t<CompanyInfo>>(_a[1]))); break;
-        case 2: _t->onFinancialDataReceived((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QMap<QString,QVariant>>>(_a[2]))); break;
-        case 3: _t->onCompanyListUpdated((*reinterpret_cast< std::add_pointer_t<QStringList>>(_a[1]))); break;
+        case 1: _t->onTabChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 2: _t->onCompanyInfoReceived((*reinterpret_cast< std::add_pointer_t<CompanyInfo>>(_a[1]))); break;
+        case 3: _t->onFinancialDataReceived((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QMap<QString,QVariant>>>(_a[2]))); break;
+        case 4: _t->onCompanyAnnouncementsReceived((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QJsonArray>>(_a[2]))); break;
+        case 5: _t->onCompanyListUpdated((*reinterpret_cast< std::add_pointer_t<QStringList>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
-        case 1:
+        case 2:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
             case 0:
@@ -131,14 +146,14 @@ int CompanyWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 4)
+        if (_id < 6)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 6;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 4)
+        if (_id < 6)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 6;
     }
     return _id;
 }

@@ -9,6 +9,8 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QSet>
+#include <QHash>
+#include <QThread>
 #include <QMutexLocker>
 
 class DbConnectionPool : public QObject {
@@ -61,8 +63,11 @@ private:
     int m_maxConnections;
     
     // 连接管理
-    QQueue<QString> m_availableConnections; // 可用连接名称队列
-    QSet<QString> m_usedConnections;        // 正在使用的连接名称
+    // Qt SQL connections are thread-affine: a connection created in one thread
+    // must only be used in that same thread. So the pool is maintained per-thread.
+    QHash<quintptr, QQueue<QString>> m_availableConnectionsByThread; // threadId -> available names
+    QHash<quintptr, QSet<QString>> m_usedConnectionsByThread;        // threadId -> used names
+    QHash<QString, quintptr> m_connectionOwnerThread;                // connectionName -> owner threadId
     mutable QMutex m_mutex;
     QWaitCondition m_waitCondition;
     

@@ -6,16 +6,15 @@
 #include <QMap>
 #include <QString>
 #include "quotedata.h"
-#include "dbmanager.h"
 
-class DataService : public QObject {
+class DataService : public QObject
+{
     Q_OBJECT
 
 public:
-    explicit DataService(DbManager *dbManager = nullptr, QObject *parent = nullptr);
+    explicit DataService(QObject *parent = nullptr);
     ~DataService();
 
-    // 实时行情相关
     Q_INVOKABLE void startRealTimeQuotes();
     Q_INVOKABLE void stopRealTimeQuotes();
     Q_INVOKABLE void subscribeQuote(const QString &symbol);
@@ -23,66 +22,66 @@ public:
     Q_INVOKABLE QVector<QuoteData> getQuoteList() const;
     Q_INVOKABLE QuoteData getQuote(const QString &symbol) const;
 
-    // 历史数据相关
     Q_INVOKABLE void requestKLineData(const QString &symbol, const QString &period, int count = 100);
     Q_INVOKABLE void requestTradeDetails(const QString &symbol, const QDateTime &startTime, const QDateTime &endTime);
-
-    // 基本面信息相关
     Q_INVOKABLE void requestCompanyInfo(const QString &symbol);
     Q_INVOKABLE void requestFinancialData(const QString &symbol);
     Q_INVOKABLE void loadCompanyList();
-
-    // 指数和板块相关
     Q_INVOKABLE void requestIndexData();
     Q_INVOKABLE void requestSectorData();
     Q_INVOKABLE QVector<IndexData> getIndexList() const;
     Q_INVOKABLE QVector<SectorData> getSectorList() const;
+    Q_INVOKABLE QStringList getAllStockSymbols() const;
+    Q_INVOKABLE QString getStockName(const QString &symbol) const;
+    Q_INVOKABLE void requestCompanyAnnouncements(const QString &symbol);
+    Q_INVOKABLE void requestNewsList(const QString &category = "all", int page = 1, int size = 20, const QString &keyword = "");
+    Q_INVOKABLE void requestStockNews(const QString &symbol);
+    Q_INVOKABLE void requestNewsDetail(int id);
+    Q_INVOKABLE void requestNewsRefresh();
 
 signals:
-    // 实时行情信号
     void quoteUpdated(const QuoteData &quote);
     void quoteListUpdated(const QVector<QuoteData> &quotes);
-
-    // 历史数据信号
     void kLineDataReceived(const QString &symbol, const QString &period, const QVector<KLineData> &data);
     void tradeDetailsReceived(const QString &symbol, const QVector<TradeDetail> &details);
-
-    // 基本面信息信号
     void companyInfoReceived(const CompanyInfo &info);
     void financialDataReceived(const QString &symbol, const QMap<QString, QVariant> &data);
     void companyListUpdated(const QStringList &symbols);
-
-    // 指数和板块信号
+    void companyAnnouncementsReceived(const QString &symbol, const QJsonArray &announcements);
     void indexDataUpdated(const QVector<IndexData> &indices);
     void sectorDataUpdated(const QVector<SectorData> &sectors);
+    void newsListReceived(const QJsonArray &newsList, int total);
+    void stockNewsReceived(const QString &symbol, const QJsonArray &news);
+    void newsDetailReceived(int id, const QJsonObject &detail);
+    void newsRefreshFinished();
 
 private slots:
-    void updateRealTimeData();
+    void pollQuotes();
+    void pollIndices();
+    void pollSectors();
 
 private:
-    // 模拟数据生成
-    QuoteData generateRandomQuote(const QString &symbol) const;
-    KLineData generateRandomKLine(const QDateTime &time, const QString &period) const;
-    TradeDetail generateRandomTrade(const QDateTime &time) const;
-    CompanyInfo generateRandomCompanyInfo(const QString &symbol) const;
-    IndexData generateRandomIndex(const QString &code) const;
-    SectorData generateRandomSector(const QString &code) const;
+    void requestQuoteHttp(const QString &symbol);
 
-    // 数据存储
+    // Parsing helpers
+    static QuoteData parseQuoteJson(const QJsonObject &json);
+    static KLineData parseKLineJson(const QJsonObject &json);
+    static CompanyInfo parseCompanyJson(const QJsonObject &json);
+    static IndexData parseIndexJson(const QJsonObject &json);
+    static SectorData parseSectorJson(const QJsonObject &json);
+
     QMap<QString, QuoteData> m_quotes;
     QMap<QString, QVector<KLineData>> m_klineData;
     QMap<QString, QVector<TradeDetail>> m_tradeDetails;
     QMap<QString, CompanyInfo> m_companyInfo;
     QVector<IndexData> m_indices;
     QVector<SectorData> m_sectors;
-
-    // 定时器
-    QTimer *m_realTimeTimer;
     QVector<QString> m_subscribedSymbols;
+    QMap<QString, QString> m_stockNames;
+    QStringList m_allSymbols;
 
-    // 模拟数据基础价格
-    QMap<QString, double> m_basePrices;
-
-    // 数据库管理器
-    DbManager *m_dbManager;
+    QTimer *m_quoteTimer;
+    QTimer *m_indexTimer;
+    QTimer *m_sectorTimer;
+    bool m_running = false;
 };

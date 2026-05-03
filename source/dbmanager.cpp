@@ -1,524 +1,273 @@
 #include "dbmanager.h"
-#include "dbconnectionpool.h"
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
+#include "httpmanager.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QNetworkReply>
+#include <QUrl>
 #include <QDebug>
-#include <QProcessEnvironment>
-#include <QDateTime>
 
-DbManager::DbManager(QObject *parent) 
+DbManager::DbManager(QObject *parent)
     : QObject(parent)
-    , m_pool(nullptr)
-    , m_usePool(false)
 {
-    // 默认使用连接池
-    m_pool = &DbConnectionPool::instance();
-    m_usePool = true;
 }
 
-DbManager::~DbManager() {
-	// Note: We don't close the connection here because it might be shared
-	// The connection will be closed when the application exits
-	// If you need to explicitly close, use QSqlDatabase::removeDatabase()
+void DbManager::initialize()
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/stocks");
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (!HttpManager::isSuccess(resp)) {
+            qWarning() << "DbManager: failed to load stock list:" << HttpManager::errorMessage(resp);
+            m_initialized = true; // Still mark initialized, cache will be empty but app can work
+            emit initialized(false);
+            return;
+        }
+        QJsonArray arr = HttpManager::dataArray(resp);
+        m_stockNames.clear();
+        m_allSymbols.clear();
+        for (const QJsonValue &v : arr) {
+            QJsonObject obj = v.toObject();
+            QString symbol = obj["symbol"].toString();
+            QString name = obj["name"].toString();
+            m_stockNames[symbol] = name;
+            m_allSymbols.append(symbol);
+        }
+        m_initialized = true;
+        qDebug() << "DbManager: loaded" << m_allSymbols.size() << "stocks";
+        emit initialized(true);
+    });
 }
 
-bool DbManager::initialize() {
-    if (m_usePool && m_pool) {
-        // 使用连接池
-        if (!m_pool->initialize(2, 10)) {
-            qWarning() << "Failed to initialize connection pool";
-            return false;
-        }
-        
-        // 从连接池获取一个连接用于schema检查
-        m_db = m_pool->getConnection();
-        if (!m_db.isValid() || !m_db.isOpen()) {
-            qWarning() << "Failed to get connection from pool";
-            return false;
-        }
-        
-        // 确保schema存在
-        bool schemaOk = ensureSchema();
-        
-        // 释放连接（schema检查完成后）
-        m_pool->releaseConnection(m_db);
-        
-        return schemaOk;
-    } else {
-        // 使用单连接模式（向后兼容）
-        static const QString connectionName = "StockTraderDBConnection";
-        
-        if (QSqlDatabase::contains(connectionName)) {
-            m_db = QSqlDatabase::database(connectionName);
-            if (m_db.isOpen()) {
-                // Connection exists and is open, just verify schema
-                return ensureSchema();
-            }
-            // Connection exists but is closed, remove it and recreate
-            QSqlDatabase::removeDatabase(connectionName);
-        }
-        
-        // Read env vars, with defaults
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        const QString host = env.value("DB_HOST", "127.0.0.1");
-        const QString portStr = env.value("DB_PORT", "3306");
-        const QString dbName = env.value("DB_NAME", "stock_trader");
-        const QString user = env.value("DB_USER", "root");
-        const QString password = env.value("DB_PASSWORD", "HBsc75820306@");
-
-        bool okPort = false;
-        int port = portStr.toInt(&okPort);
-        if (!okPort) port = 3306;
-
-        m_db = QSqlDatabase::addDatabase("QMYSQL", connectionName);
-        m_db.setHostName(host);
-        m_db.setPort(port);
-        m_db.setDatabaseName(dbName);
-        m_db.setUserName(user);
-        m_db.setPassword(password);
-
-        if (!m_db.open()) {
-            qWarning() << "DB open failed:" << m_db.lastError();
-            return false;
-        }
-        return ensureSchema();
+QString DbManager::getStockName(const QString &symbol) const
+{
+    if (m_stockNames.contains(symbol))
+        return m_stockNames[symbol];
+    // Try without suffix
+    for (auto it = m_stockNames.begin(); it != m_stockNames.end(); ++it) {
+        if (it.key().startsWith(symbol))
+            return it.value();
     }
-    
-    return false; // 不应该到达这里
+    return QString();
 }
 
-bool DbManager::ensureConnection() {
-    if (m_usePool && m_pool) {
-        // 使用连接池时，每次获取新连接
-        if (!m_db.isValid() || !m_db.isOpen()) {
-            m_db = m_pool->getConnection();
-            return m_db.isValid() && m_db.isOpen();
-        }
-        return true;
-    } else {
-        // 单连接模式
-        static const QString connectionName = "StockTraderDBConnection";
-        
-        if (!m_db.isValid() || !m_db.isOpen()) {
-            if (QSqlDatabase::contains(connectionName)) {
-                m_db = QSqlDatabase::database(connectionName);
-                if (m_db.isOpen()) {
-                    return true;
-                }
-            }
-            // Try to reinitialize
-            return initialize();
-        }
-        return true;
-    }
+QStringList DbManager::getAllStockSymbols() const
+{
+    return m_allSymbols;
 }
 
-QSqlDatabase DbManager::database() {
-    if (m_usePool && m_pool) {
-        // 使用连接池，每次获取新连接
-        if (!m_db.isValid() || !m_db.isOpen()) {
-            m_db = m_pool->getConnection();
-        }
-        return m_db;
-    } else {
-        // 单连接模式
-        ensureConnection();
-        return m_db;
-    }
+QStringList DbManager::getAllCompanySymbols() const
+{
+    return m_allSymbols;
 }
 
-void DbManager::releaseConnection() {
-    if (m_usePool && m_pool && m_db.isValid()) {
-        m_pool->releaseConnection(m_db);
-        m_db = QSqlDatabase(); // 清空连接引用
-    }
+bool DbManager::companyInfoExists(const QString &symbol) const
+{
+    return m_stockNames.contains(symbol)
+        || std::any_of(m_stockNames.begin(), m_stockNames.end(),
+                       [&](const QString &k) { return k.startsWith(symbol); });
 }
 
-bool DbManager::ensureSchema() {
-    // 确保有有效连接
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        qWarning() << "No valid database connection for schema check";
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    const char *usersSql =
-        "CREATE TABLE IF NOT EXISTS users ("
-        "  id INT AUTO_INCREMENT PRIMARY KEY,"
-        "  username VARCHAR(64) UNIQUE NOT NULL,"
-        "  password_hash VARCHAR(255) NOT NULL,"
-        "  salt VARCHAR(64) NULL,"
-        "  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    if (!q.exec(QLatin1String(usersSql))) {
-        qWarning() << "Create users failed:" << q.lastError();
-        return false;
-    }
-    q.finish();
-
-    // Ensure salt column exists on older MySQL versions (without IF NOT EXISTS)
-    QSqlQuery checkSalt(db);
-    // INFORMATION_SCHEMA works across MySQL versions
-    checkSalt.prepare(
-        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
-        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'salt'"
-    );
-    if (checkSalt.exec() && checkSalt.next()) {
-        const int hasSalt = checkSalt.value(0).toInt();
-        if (hasSalt == 0) {
-            QSqlQuery addSalt(db);
-            if (!addSalt.exec("ALTER TABLE users ADD COLUMN salt VARCHAR(64) AFTER password_hash")) {
-                qWarning() << "Add salt column failed:" << addSalt.lastError();
-            }
+void DbManager::loadCompanyInfo(const QString &symbol)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/company/" + symbol);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, symbol]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (!HttpManager::isSuccess(resp)) {
+            emit errorOccurred(HttpManager::errorMessage(resp));
+            return;
         }
-    } else {
-        qWarning() << "Failed to check salt column existence:" << checkSalt.lastError();
-    }
-
-    // Ensure personal info columns exist
-    QStringList personalInfoColumns = {"real_name", "email", "phone", "id_card", "address", "last_login_time", "status"};
-    QStringList columnTypes = {"VARCHAR(64)", "VARCHAR(128)", "VARCHAR(32)", "VARCHAR(32)", "VARCHAR(255)", "TIMESTAMP NULL", "VARCHAR(16)"};
-    QStringList columnDefaults = {"", "", "", "", "", "NULL", "'正常'"};
-    
-    for (int i = 0; i < personalInfoColumns.size(); ++i) {
-        QSqlQuery checkCol(db);
-        checkCol.prepare(
-            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
-            "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = ?"
-        );
-        checkCol.addBindValue(personalInfoColumns[i]);
-        if (checkCol.exec() && checkCol.next()) {
-            const int hasCol = checkCol.value(0).toInt();
-            if (hasCol == 0) {
-                QSqlQuery addCol(db);
-                QString alterSql = QString("ALTER TABLE users ADD COLUMN %1 %2").arg(personalInfoColumns[i]).arg(columnTypes[i]);
-                if (!columnDefaults[i].isEmpty() && columnDefaults[i] != "NULL") {
-                    alterSql += QString(" DEFAULT %1").arg(columnDefaults[i]);
-                }
-                if (!addCol.exec(alterSql)) {
-                    qWarning() << "Add column" << personalInfoColumns[i] << "failed:" << addCol.lastError();
-                }
-            }
-        }
-    }
-
-	const char *ordersSql =
-		"CREATE TABLE IF NOT EXISTS orders ("
-		"  id INT AUTO_INCREMENT PRIMARY KEY,"
-		"  order_id VARCHAR(32) UNIQUE NOT NULL,"
-		"  username VARCHAR(64) NOT NULL,"
-		"  symbol VARCHAR(32) NOT NULL,"
-		"  side VARCHAR(8) NOT NULL,"
-		"  quantity INT NOT NULL,"
-		"  price DOUBLE NOT NULL,"
-		"  status VARCHAR(16) NOT NULL,"
-		"  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
-		"  INDEX idx_user(username),"
-		"  INDEX idx_symbol(symbol),"
-		"  INDEX idx_created_at(created_at)"
-		") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-	if (!q.exec(QLatin1String(ordersSql))) {
-		qWarning() << "Create orders failed:" << q.lastError();
-		return false;
-	}
-
-    q.finish();
-
-    const char *positionsSql =
-        "CREATE TABLE IF NOT EXISTS positions ("
-        "  id INT AUTO_INCREMENT PRIMARY KEY,"
-        "  username VARCHAR(64) NOT NULL,"
-        "  symbol VARCHAR(32) NOT NULL,"
-        "  quantity BIGINT NOT NULL DEFAULT 0,"
-        "  avg_price DOUBLE NOT NULL DEFAULT 0,"
-        "  UNIQUE KEY uniq_user_symbol(username, symbol)"
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    if (!q.exec(QLatin1String(positionsSql))) {
-        qWarning() << "Create positions failed:" << q.lastError();
-        return false;
-    }
-
-    q.finish();
-
-    const char *tradesSql =
-        "CREATE TABLE IF NOT EXISTS trades ("
-        "  id INT AUTO_INCREMENT PRIMARY KEY,"
-        "  order_id VARCHAR(32) NOT NULL,"
-        "  username VARCHAR(64) NOT NULL,"
-        "  symbol VARCHAR(32) NOT NULL,"
-        "  side VARCHAR(8) NOT NULL,"
-        "  quantity INT NOT NULL,"
-        "  price DOUBLE NOT NULL,"
-        "  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
-        "  INDEX idx_order(order_id)"
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    if (!q.exec(QLatin1String(tradesSql))) {
-        qWarning() << "Create trades failed:" << q.lastError();
-        return false;
-    }
-
-    q.finish();
-
-    const char *companiesSql =
-        "CREATE TABLE IF NOT EXISTS companies ("
-        "  id INT AUTO_INCREMENT PRIMARY KEY,"
-        "  symbol VARCHAR(32) UNIQUE NOT NULL,"
-        "  name VARCHAR(128) NOT NULL,"
-        "  industry VARCHAR(64),"
-        "  sector VARCHAR(64),"
-        "  total_shares DOUBLE NOT NULL DEFAULT 0,"
-        "  circulating_shares DOUBLE NOT NULL DEFAULT 0,"
-        "  market_cap DOUBLE NOT NULL DEFAULT 0,"
-        "  circulating_cap DOUBLE NOT NULL DEFAULT 0,"
-        "  pe DOUBLE,"
-        "  pb DOUBLE,"
-        "  roe DOUBLE,"
-        "  revenue DOUBLE,"
-        "  net_profit DOUBLE,"
-        "  report_date DATETIME,"
-        "  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-        "  INDEX idx_symbol(symbol)"
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    if (!q.exec(QLatin1String(companiesSql))) {
-        qWarning() << "Create companies failed:" << q.lastError();
-        return false;
-    }
-
-    q.finish();
-
-    return true;
+        QJsonObject data = HttpManager::dataObject(resp);
+        parseAndEmitCompanyInfo(symbol, data);
+    });
 }
 
-bool DbManager::saveCompanyInfo(const QString &symbol, const QString &name, const QString &industry,
+void DbManager::saveCompanyInfo(const QString &symbol, const QString &name, const QString &industry,
                                  const QString &sector, double totalShares, double circulatingShares,
                                  double marketCap, double circulatingCap, double pe, double pb,
-                                 double roe, double revenue, double netProfit, const QDateTime &reportDate) {
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare(
-        "INSERT INTO companies (symbol, name, industry, sector, total_shares, circulating_shares, "
-        "market_cap, circulating_cap, pe, pb, roe, revenue, net_profit, report_date) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-        "ON DUPLICATE KEY UPDATE "
-        "name=VALUES(name), industry=VALUES(industry), sector=VALUES(sector), "
-        "total_shares=VALUES(total_shares), circulating_shares=VALUES(circulating_shares), "
-        "market_cap=VALUES(market_cap), circulating_cap=VALUES(circulating_cap), "
-        "pe=VALUES(pe), pb=VALUES(pb), roe=VALUES(roe), "
-        "revenue=VALUES(revenue), net_profit=VALUES(net_profit), report_date=VALUES(report_date)"
-    );
-    q.addBindValue(symbol);
-    q.addBindValue(name);
-    q.addBindValue(industry);
-    q.addBindValue(sector);
-    q.addBindValue(totalShares);
-    q.addBindValue(circulatingShares);
-    q.addBindValue(marketCap);
-    q.addBindValue(circulatingCap);
-    q.addBindValue(pe);
-    q.addBindValue(pb);
-    q.addBindValue(roe);
-    q.addBindValue(revenue);
-    q.addBindValue(netProfit);
-    q.addBindValue(reportDate);
-    
-    bool success = q.exec();
-    if (!success) {
-        qWarning() << "Save company info failed:" << q.lastError();
-    }
-    
-    // 如果使用连接池，释放连接
-    if (m_usePool && m_pool) {
-        releaseConnection();
-    }
-    
-    return success;
+                                 double roe, double revenue, double netProfit, const QDateTime &reportDate)
+{
+    QJsonObject body;
+    body["symbol"] = symbol;
+    body["name"] = name;
+    body["industry"] = industry;
+    body["sector"] = sector;
+    body["total_shares"] = totalShares;
+    body["circulating_shares"] = circulatingShares;
+    body["market_cap"] = marketCap;
+    body["circulating_cap"] = circulatingCap;
+    body["pe"] = pe;
+    body["pb"] = pb;
+    body["roe"] = roe;
+    body["revenue"] = revenue;
+    body["net_profit"] = netProfit;
+    body["report_date"] = reportDate.toString(Qt::ISODate);
+
+    QNetworkReply *reply = HttpManager::instance().put("/api/admin/companies/0", body);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        emit companyInfoSaved(HttpManager::isSuccess(resp));
+    });
 }
 
-bool DbManager::loadCompanyInfo(const QString &symbol, QString &name, QString &industry, QString &sector,
-                                 double &totalShares, double &circulatingShares, double &marketCap,
-                                 double &circulatingCap, double &pe, double &pb, double &roe,
-                                 double &revenue, double &netProfit, QDateTime &reportDate) {
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare(
-        "SELECT name, industry, sector, total_shares, circulating_shares, market_cap, "
-        "circulating_cap, pe, pb, roe, revenue, net_profit, report_date "
-        "FROM companies WHERE symbol=?"
-    );
-    q.addBindValue(symbol);
-    
-    if (!q.exec() || !q.next()) {
-        return false;
-    }
-    
-    name = q.value(0).toString();
-    industry = q.value(1).toString();
-    sector = q.value(2).toString();
-    totalShares = q.value(3).toDouble();
-    circulatingShares = q.value(4).toDouble();
-    marketCap = q.value(5).toDouble();
-    circulatingCap = q.value(6).toDouble();
-    pe = q.value(7).toDouble();
-    pb = q.value(8).toDouble();
-    roe = q.value(9).toDouble();
-    revenue = q.value(10).toDouble();
-    netProfit = q.value(11).toDouble();
-    reportDate = q.value(12).toDateTime();
-    
-    return true;
-}
-
-bool DbManager::companyInfoExists(const QString &symbol) {
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare("SELECT COUNT(*) FROM companies WHERE symbol=?");
-    q.addBindValue(symbol);
-    if (q.exec() && q.next()) {
-        bool exists = q.value(0).toInt() > 0;
-        
-        // 如果使用连接池，释放连接
-        if (m_usePool && m_pool) {
-            releaseConnection();
+void DbManager::getCompanyAnnouncements(const QString &symbol)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/company/" + symbol + "/announcements");
+    connect(reply, &QNetworkReply::finished, this, [this, reply, symbol]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (!HttpManager::isSuccess(resp)) {
+            emit errorOccurred(HttpManager::errorMessage(resp));
+            emit announcementsLoaded(symbol, QString());
+            return;
         }
-        
-        return exists;
-    }
-    
-    // 如果使用连接池，释放连接
-    if (m_usePool && m_pool) {
-        releaseConnection();
-    }
-    
-    return false;
-}
-
-QStringList DbManager::getAllCompanySymbols() {
-    QStringList symbols;
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return symbols;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare("SELECT symbol FROM companies ORDER BY symbol");
-    if (q.exec()) {
-        while (q.next()) {
-            symbols.append(q.value(0).toString());
+        QJsonArray arr = HttpManager::dataArray(resp);
+        QString text;
+        QString companyName = getStockName(symbol);
+        if (companyName.isEmpty()) companyName = symbol;
+        for (const QJsonValue &v : arr) {
+            QJsonObject a = v.toObject();
+            QString title = a["title"].toString();
+            QString content = a["content"].toString();
+            QString date = a["publishDate"].toString();
+            QString images = a["images"].toString();
+            text += QString::fromUtf8("【%1】%2\n\n%3\n%4\n").arg(companyName, title, content, date);
+            if (!images.isEmpty())
+                text += QString::fromUtf8("[IMAGE]%1[/IMAGE]\n").arg(images);
+            text += "\n";
         }
-    }
-    
-    // 如果使用连接池，释放连接
-    if (m_usePool && m_pool) {
-        releaseConnection();
-    }
-    
-    return symbols;
+        emit announcementsLoaded(symbol, text);
+    });
 }
 
-bool DbManager::saveUserInfo(const QString &username, const QString &realName, const QString &email,
+void DbManager::loadUserInfo(const QString &username)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/user/info");
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (!HttpManager::isSuccess(resp)) {
+            emit userInfoLoaded(username, QString(), QString(), QString(),
+                                QString(), QString(),
+                                QDateTime(), QDateTime(), QString());
+            return;
+        }
+        QJsonObject d = HttpManager::dataObject(resp);
+        emit userInfoLoaded(
+            username,
+            d["realName"].toString(),
+            d["email"].toString(),
+            d["phone"].toString(),
+            d["idCard"].toString(),
+            d["address"].toString(),
+            QDateTime::fromString(d["registerTime"].toString(), Qt::ISODate),
+            QDateTime::fromString(d["lastLoginTime"].toString(), Qt::ISODate),
+            d["status"].toString("正常")
+        );
+    });
+}
+
+void DbManager::saveUserInfo(const QString &username, const QString &realName, const QString &email,
                               const QString &phone, const QString &idCard, const QString &address,
-                              const QString &status) {
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare(
-        "UPDATE users SET real_name=?, email=?, phone=?, id_card=?, address=?, status=? WHERE username=?"
+                              const QString &status)
+{
+    Q_UNUSED(username)
+    QJsonObject body;
+    body["realName"] = realName;
+    body["email"] = email;
+    body["phone"] = phone;
+    body["idCard"] = idCard;
+    body["address"] = address;
+    body["status"] = status;
+
+    QNetworkReply *reply = HttpManager::instance().put("/api/user/info", body);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        // Fire and forget — no signal needed
+    });
+}
+
+void DbManager::updateLastLoginTime(const QString &username)
+{
+    Q_UNUSED(username)
+    // Server handles this automatically on login — no-op on client side
+}
+
+void DbManager::loadUserWatchedSymbols(const QString &username)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/user/watchlist");
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (!HttpManager::isSuccess(resp)) {
+            emit watchedSymbolsLoaded(username, QStringList());
+            return;
+        }
+        QJsonArray arr = HttpManager::dataArray(resp);
+        QStringList symbols;
+        for (const QJsonValue &v : arr)
+            symbols.append(v.toString());
+        emit watchedSymbolsLoaded(username, symbols);
+    });
+}
+
+void DbManager::saveUserWatchedSymbol(const QString &username, const QString &symbol)
+{
+    Q_UNUSED(username)
+    QNetworkReply *reply = HttpManager::instance().post("/api/user/watchlist/" + symbol);
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
+        reply->deleteLater();
+    });
+}
+
+void DbManager::removeUserWatchedSymbol(const QString &username, const QString &symbol)
+{
+    Q_UNUSED(username)
+    QNetworkReply *reply = HttpManager::instance().del("/api/user/watchlist/" + symbol);
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
+        reply->deleteLater();
+    });
+}
+
+void DbManager::clearUserWatchedSymbols(const QString &username)
+{
+    // No bulk clear endpoint — we'd need to add one. For now, load and delete individually.
+    // Actually, just skip for now. The QuoteWidget can remove individually.
+    Q_UNUSED(username)
+}
+
+void DbManager::addSystemLog(const QString &operatorName, const QString &operationType, const QString &ipAddress)
+{
+    QJsonObject body;
+    body["operator"] = operatorName;
+    body["operation_type"] = operationType;
+    body["ip_address"] = ipAddress;
+
+    QNetworkReply *reply = HttpManager::instance().post("/api/admin/system-logs", body);
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
+        reply->deleteLater();
+    });
+}
+
+void DbManager::parseAndEmitCompanyInfo(const QString &symbol, const QJsonObject &data)
+{
+    emit companyInfoLoaded(
+        symbol,
+        data["name"].toString(),
+        data["industry"].toString(),
+        data["sector"].toString(),
+        data["totalShares"].toDouble(),
+        data["circulatingShares"].toDouble(),
+        data["marketCap"].toDouble(),
+        data["circulatingCap"].toDouble(),
+        data["pe"].toDouble(),
+        data["pb"].toDouble(),
+        data["roe"].toDouble(),
+        data["revenue"].toDouble(),
+        data["netProfit"].toDouble(),
+        QDateTime::fromString(data["reportDate"].toString(), Qt::ISODate)
     );
-    q.addBindValue(realName);
-    q.addBindValue(email);
-    q.addBindValue(phone);
-    q.addBindValue(idCard);
-    q.addBindValue(address);
-    q.addBindValue(status);
-    q.addBindValue(username);
-    
-    bool success = q.exec();
-    if (!success) {
-        qWarning() << "Save user info failed:" << q.lastError();
-    }
-    
-    // 如果使用连接池，释放连接
-    if (m_usePool && m_pool) {
-        releaseConnection();
-    }
-    
-    return success;
 }
-
-bool DbManager::loadUserInfo(const QString &username, QString &realName, QString &email,
-                              QString &phone, QString &idCard, QString &address,
-                              QDateTime &registerTime, QDateTime &lastLoginTime, QString &status) {
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare(
-        "SELECT real_name, email, phone, id_card, address, created_at, last_login_time, status "
-        "FROM users WHERE username=?"
-    );
-    q.addBindValue(username);
-    
-    if (!q.exec() || !q.next()) {
-        return false;
-    }
-    
-    realName = q.value(0).toString();
-    email = q.value(1).toString();
-    phone = q.value(2).toString();
-    idCard = q.value(3).toString();
-    address = q.value(4).toString();
-    registerTime = q.value(5).toDateTime();
-    lastLoginTime = q.value(6).toDateTime();
-    status = q.value(7).toString();
-    
-    // 如果使用连接池，释放连接
-    if (m_usePool && m_pool) {
-        releaseConnection();
-    }
-    
-    return true;
-}
-
-bool DbManager::updateLastLoginTime(const QString &username) {
-    QSqlDatabase db = database();
-    if (!db.isValid() || !db.isOpen()) {
-        return false;
-    }
-    
-    QSqlQuery q(db);
-    q.prepare("UPDATE users SET last_login_time=CURRENT_TIMESTAMP WHERE username=?");
-    q.addBindValue(username);
-    
-    bool success = q.exec();
-    if (!success) {
-        qWarning() << "Update last login time failed:" << q.lastError();
-    }
-    
-    // 如果使用连接池，释放连接
-    if (m_usePool && m_pool) {
-        releaseConnection();
-    }
-    
-    return success;
-}
-
-

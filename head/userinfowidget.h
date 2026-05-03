@@ -29,6 +29,7 @@ public:
 
     void setCurrentUser(const QString &username);
     void refreshData();
+    void refreshTheme();
 
 signals:
     void logoutRequested(); // 请求退出登录的信号
@@ -40,6 +41,15 @@ private slots:
     void onTradingStatsLoaded(const TradingStats &stats);
     void onRefreshClicked();
     void onEditPersonalInfoClicked(); // 编辑个人信息
+    void onChangePasswordClicked();
+    void onDepositClicked();
+    void onWithdrawClicked();
+    void onDepositSuccess(const QString &message);
+    void onDepositFailed(const QString &message);
+    void onWithdrawSuccess(const QString &message);
+    void onWithdrawFailed(const QString &message);
+    void onPasswordChangeSuccess(const QString &message);
+    void onPasswordChangeFailed(const QString &message);
     void onAuthButtonClicked();
     void handleLoggedOut(const QString &message);
 
@@ -66,7 +76,10 @@ private:
     // UI组件
     QTabWidget *m_tabWidget;
     QPushButton *m_refreshButton;
-    QPushButton *m_editPersonalInfoButton; // 编辑个人信息按钮
+    QPushButton *m_editPersonalInfoButton;
+    QPushButton *m_changePasswordButton;
+    QPushButton *m_depositButton;
+    QPushButton *m_withdrawButton;
     QLabel *m_userNameLabel;
     
     // 个人信息标签页

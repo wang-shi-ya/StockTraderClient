@@ -27,6 +27,7 @@ class Ui_LoginDialog
 {
 public:
     QVBoxLayout *verticalLayout;
+    QLabel *labelTitle;
     QTabWidget *tabWidget;
     QWidget *tabLogin;
     QGridLayout *gridLayoutLogin;
@@ -61,14 +62,23 @@ public:
     {
         if (LoginDialog->objectName().isEmpty())
             LoginDialog->setObjectName("LoginDialog");
-        LoginDialog->resize(345, 228);
+        LoginDialog->resize(399, 498);
+        LoginDialog->setStyleSheet(QString::fromUtf8(""));
         verticalLayout = new QVBoxLayout(LoginDialog);
+        verticalLayout->setSpacing(20);
         verticalLayout->setObjectName("verticalLayout");
+        labelTitle = new QLabel(LoginDialog);
+        labelTitle->setObjectName("labelTitle");
+        labelTitle->setAlignment(Qt::AlignmentFlag::AlignCenter);
+
+        verticalLayout->addWidget(labelTitle);
+
         tabWidget = new QTabWidget(LoginDialog);
         tabWidget->setObjectName("tabWidget");
         tabLogin = new QWidget();
         tabLogin->setObjectName("tabLogin");
         gridLayoutLogin = new QGridLayout(tabLogin);
+        gridLayoutLogin->setSpacing(12);
         gridLayoutLogin->setObjectName("gridLayoutLogin");
         labelUserLogin = new QLabel(tabLogin);
         labelUserLogin->setObjectName("labelUserLogin");
@@ -106,8 +116,8 @@ public:
 
         labelCaptchaCode = new QLabel(tabLogin);
         labelCaptchaCode->setObjectName("labelCaptchaCode");
-        labelCaptchaCode->setMinimumSize(QSize(80, 30));
-        labelCaptchaCode->setMaximumSize(QSize(80, 30));
+        labelCaptchaCode->setMinimumSize(QSize(100, 36));
+        labelCaptchaCode->setMaximumSize(QSize(100, 36));
         labelCaptchaCode->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         captchaLayout->addWidget(labelCaptchaCode);
@@ -124,6 +134,7 @@ public:
         tabRegister = new QWidget();
         tabRegister->setObjectName("tabRegister");
         gridLayoutRegister = new QGridLayout(tabRegister);
+        gridLayoutRegister->setSpacing(10);
         gridLayoutRegister->setObjectName("gridLayoutRegister");
         labelUserReg = new QLabel(tabRegister);
         labelUserReg->setObjectName("labelUserReg");
@@ -216,20 +227,35 @@ public:
 
     void retranslateUi(QDialog *LoginDialog)
     {
-        LoginDialog->setWindowTitle(QCoreApplication::translate("LoginDialog", "Login / Register", nullptr));
+        LoginDialog->setWindowTitle(QCoreApplication::translate("LoginDialog", "\350\202\241\347\245\250\344\272\244\346\230\223\345\256\242\346\210\267\347\253\257 - \347\231\273\345\275\225/\346\263\250\345\206\214", nullptr));
+        labelTitle->setStyleSheet(QCoreApplication::translate("LoginDialog", "font-size: 24px;\n"
+"        font-weight: bold;\n"
+"        color: #1E88E5;\n"
+"        margin-bottom: 10px;", nullptr));
+        labelTitle->setText(QCoreApplication::translate("LoginDialog", "\350\202\241\347\245\250\344\272\244\346\230\223\345\256\242\346\210\267\347\253\257", nullptr));
         labelUserLogin->setText(QCoreApplication::translate("LoginDialog", "\347\224\250\346\210\267\345\220\215\357\274\232", nullptr));
+        lineUserLogin->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\347\224\250\346\210\267\345\220\215", nullptr));
         labelPwdLogin->setText(QCoreApplication::translate("LoginDialog", "\345\257\206\347\240\201\357\274\232", nullptr));
+        linePwdLogin->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\345\257\206\347\240\201", nullptr));
         labelCaptchaLogin->setText(QCoreApplication::translate("LoginDialog", "\351\252\214\350\257\201\347\240\201\357\274\232", nullptr));
-        labelCaptchaCode->setStyleSheet(QCoreApplication::translate("LoginDialog", "background-color: #f0f0f0; border: 1px solid #ccc; font-size: 18px; font-weight: bold; color: #333;", nullptr));
+        lineCaptchaLogin->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\351\252\214\350\257\201\347\240\201", nullptr));
+        labelCaptchaCode->setStyleSheet(QCoreApplication::translate("LoginDialog", "background-color: #f0f0f0; border: 1px solid #ddd; font-size: 18px; font-weight: bold; color: #333; border-radius: 4px;", nullptr));
         btnLogin->setText(QCoreApplication::translate("LoginDialog", "\347\231\273\345\275\225", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tabLogin), QCoreApplication::translate("LoginDialog", "\347\231\273\345\275\225", nullptr));
         labelUserReg->setText(QCoreApplication::translate("LoginDialog", "\347\224\250\346\210\267\345\220\215\357\274\232", nullptr));
+        lineUserReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\347\224\250\346\210\267\345\220\215", nullptr));
         labelPwdReg->setText(QCoreApplication::translate("LoginDialog", "\345\257\206\347\240\201\357\274\232", nullptr));
+        linePwdReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\345\257\206\347\240\201", nullptr));
         labelRealNameReg->setText(QCoreApplication::translate("LoginDialog", "\347\234\237\345\256\236\345\247\223\345\220\215\357\274\232", nullptr));
+        lineRealNameReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\347\234\237\345\256\236\345\247\223\345\220\215", nullptr));
         labelEmailReg->setText(QCoreApplication::translate("LoginDialog", "\351\202\256\347\256\261\357\274\232", nullptr));
+        lineEmailReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\351\202\256\347\256\261", nullptr));
         labelPhoneReg->setText(QCoreApplication::translate("LoginDialog", "\346\211\213\346\234\272\345\217\267\357\274\232", nullptr));
+        linePhoneReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\346\211\213\346\234\272\345\217\267", nullptr));
         labelIdCardReg->setText(QCoreApplication::translate("LoginDialog", "\350\272\253\344\273\275\350\257\201\345\217\267\357\274\232", nullptr));
+        lineIdCardReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\350\272\253\344\273\275\350\257\201\345\217\267", nullptr));
         labelAddressReg->setText(QCoreApplication::translate("LoginDialog", "\345\234\260\345\235\200\357\274\232", nullptr));
+        lineAddressReg->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\350\257\267\350\276\223\345\205\245\345\234\260\345\235\200", nullptr));
         btnRegister->setText(QCoreApplication::translate("LoginDialog", "\346\263\250\345\206\214", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tabRegister), QCoreApplication::translate("LoginDialog", "\346\263\250\345\206\214", nullptr));
     } // retranslateUi

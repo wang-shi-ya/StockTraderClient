@@ -29,6 +29,7 @@ private slots:
     void onPeriodChanged();
     void onKLineDataReceived(const QString &symbol, const QString &period, const QVector<KLineData> &data);
     void onQuoteUpdated(const QuoteData &quote);
+    void onStockListUpdated(const QStringList &symbols);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -44,7 +45,11 @@ private:
     void drawCrosshair(QPainter &painter, const QRect &chartRect);
     void drawPriceAxis(QPainter &painter, const QRect &chartRect);
     void drawTimeAxis(QPainter &painter, const QRect &chartRect);
+    void drawGridLines(QPainter &painter, const QRect &chartRect);
+    void drawMALines(QPainter &painter, const QRect &chartRect);
+    void drawSeparator(QPainter &painter, const QRect &chartRect);
     void updateChart();
+    QVector<double> calcMA(int period) const;
     QString formatPrice(double price) const;
     QString formatVolume(long long volume) const;
     QDateTime getTimeAtPosition(int x) const;
@@ -58,6 +63,7 @@ private:
     QString m_currentSymbol;
     QString m_currentPeriod;
     QVector<KLineData> m_klineData;
+    QVector<double> m_ma5, m_ma10, m_ma20;
     
     // UI组件
     QComboBox *m_symbolCombo;

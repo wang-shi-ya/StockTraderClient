@@ -52,6 +52,7 @@ template <> constexpr inline auto Client::qt_create_metaobjectdata<qt_meta_tag_Z
         "OrderInfo",
         "order",
         "orderUpdated",
+        "orderFilled",
         "orderHistoryLoaded",
         "QList<OrderInfo>",
         "orders",
@@ -78,6 +79,7 @@ template <> constexpr inline auto Client::qt_create_metaobjectdata<qt_meta_tag_Z
         "price",
         "cancelOrder",
         "orderId",
+        "fillOrder",
         "loadOrderHistory",
         "logout"
     };
@@ -103,71 +105,79 @@ template <> constexpr inline auto Client::qt_create_metaobjectdata<qt_meta_tag_Z
         QtMocHelpers::SignalData<void(const OrderInfo &)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
             { 0x80000000 | 10, 11 },
         }}),
+        // Signal 'orderFilled'
+        QtMocHelpers::SignalData<void(const OrderInfo &)>(13, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { 0x80000000 | 10, 11 },
+        }}),
         // Signal 'orderHistoryLoaded'
-        QtMocHelpers::SignalData<void(const QVector<OrderInfo> &)>(13, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { 0x80000000 | 14, 15 },
+        QtMocHelpers::SignalData<void(const QVector<OrderInfo> &)>(14, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { 0x80000000 | 15, 16 },
         }}),
         // Signal 'orderRejected'
-        QtMocHelpers::SignalData<void(const QString &)>(16, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 17 },
+        QtMocHelpers::SignalData<void(const QString &)>(17, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 18 },
         }}),
         // Signal 'positionsLoaded'
-        QtMocHelpers::SignalData<void(const QVector<PositionInfo> &)>(18, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { 0x80000000 | 19, 20 },
+        QtMocHelpers::SignalData<void(const QVector<PositionInfo> &)>(19, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { 0x80000000 | 20, 21 },
         }}),
         // Signal 'loggedOut'
-        QtMocHelpers::SignalData<void(const QString &)>(21, 2, QMC::AccessPublic, QMetaType::Void, {{
+        QtMocHelpers::SignalData<void(const QString &)>(22, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 4 },
         }}),
         // Signal 'accountFrozen'
-        QtMocHelpers::SignalData<void()>(22, 2, QMC::AccessPublic, QMetaType::Void),
+        QtMocHelpers::SignalData<void()>(23, 2, QMC::AccessPublic, QMetaType::Void),
         // Method 'login'
-        QtMocHelpers::MethodData<void(const QString &, const QString &)>(23, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &)>(24, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 },
         }}),
         // Method 'registerUser'
-        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &, const QString &, const QString &, const QString &)>(26, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 }, { QMetaType::QString, 27 }, { QMetaType::QString, 28 },
-            { QMetaType::QString, 29 }, { QMetaType::QString, 30 }, { QMetaType::QString, 31 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &, const QString &, const QString &, const QString &)>(27, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 }, { QMetaType::QString, 28 }, { QMetaType::QString, 29 },
+            { QMetaType::QString, 30 }, { QMetaType::QString, 31 }, { QMetaType::QString, 32 },
         }}),
         // Method 'registerUser'
-        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &, const QString &, const QString &)>(26, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 }, { QMetaType::QString, 27 }, { QMetaType::QString, 28 },
-            { QMetaType::QString, 29 }, { QMetaType::QString, 30 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &, const QString &, const QString &)>(27, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 }, { QMetaType::QString, 28 }, { QMetaType::QString, 29 },
+            { QMetaType::QString, 30 }, { QMetaType::QString, 31 },
         }}),
         // Method 'registerUser'
-        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &, const QString &)>(26, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 }, { QMetaType::QString, 27 }, { QMetaType::QString, 28 },
-            { QMetaType::QString, 29 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &, const QString &)>(27, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 }, { QMetaType::QString, 28 }, { QMetaType::QString, 29 },
+            { QMetaType::QString, 30 },
         }}),
         // Method 'registerUser'
-        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &)>(26, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 }, { QMetaType::QString, 27 }, { QMetaType::QString, 28 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &, const QString &)>(27, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 }, { QMetaType::QString, 28 }, { QMetaType::QString, 29 },
         }}),
         // Method 'registerUser'
-        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &)>(26, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 }, { QMetaType::QString, 27 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &, const QString &)>(27, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 }, { QMetaType::QString, 28 },
         }}),
         // Method 'registerUser'
-        QtMocHelpers::MethodData<void(const QString &, const QString &)>(26, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
-            { QMetaType::QString, 24 }, { QMetaType::QString, 25 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &)>(27, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
+            { QMetaType::QString, 25 }, { QMetaType::QString, 26 },
         }}),
         // Method 'queryQuote'
-        QtMocHelpers::MethodData<void(const QString &)>(32, 2, QMC::AccessPublic, QMetaType::Void, {{
+        QtMocHelpers::MethodData<void(const QString &)>(33, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 7 },
         }}),
         // Method 'placeOrder'
-        QtMocHelpers::MethodData<void(const QString &, const QString &, int, double)>(33, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 7 }, { QMetaType::QString, 34 }, { QMetaType::Int, 35 }, { QMetaType::Double, 36 },
+        QtMocHelpers::MethodData<void(const QString &, const QString &, int, double)>(34, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 7 }, { QMetaType::QString, 35 }, { QMetaType::Int, 36 }, { QMetaType::Double, 37 },
         }}),
         // Method 'cancelOrder'
-        QtMocHelpers::MethodData<void(const QString &)>(37, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 38 },
+        QtMocHelpers::MethodData<void(const QString &)>(38, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 39 },
+        }}),
+        // Method 'fillOrder'
+        QtMocHelpers::MethodData<void(const QString &)>(40, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 39 },
         }}),
         // Method 'loadOrderHistory'
-        QtMocHelpers::MethodData<void()>(39, 2, QMC::AccessPublic, QMetaType::Void),
+        QtMocHelpers::MethodData<void()>(41, 2, QMC::AccessPublic, QMetaType::Void),
         // Method 'logout'
-        QtMocHelpers::MethodData<void()>(40, 2, QMC::AccessPublic, QMetaType::Void),
+        QtMocHelpers::MethodData<void()>(42, 2, QMC::AccessPublic, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -196,23 +206,25 @@ void Client::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 2: _t->quoteUpdated((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<double>>(_a[2]))); break;
         case 3: _t->orderPlaced((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
         case 4: _t->orderUpdated((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
-        case 5: _t->orderHistoryLoaded((*reinterpret_cast< std::add_pointer_t<QList<OrderInfo>>>(_a[1]))); break;
-        case 6: _t->orderRejected((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 7: _t->positionsLoaded((*reinterpret_cast< std::add_pointer_t<QList<PositionInfo>>>(_a[1]))); break;
-        case 8: _t->loggedOut((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 9: _t->accountFrozen(); break;
-        case 10: _t->login((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
-        case 11: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[6])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[7]))); break;
-        case 12: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[6]))); break;
-        case 13: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5]))); break;
-        case 14: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4]))); break;
-        case 15: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3]))); break;
-        case 16: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
-        case 17: _t->queryQuote((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 18: _t->placeOrder((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<double>>(_a[4]))); break;
-        case 19: _t->cancelOrder((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 20: _t->loadOrderHistory(); break;
-        case 21: _t->logout(); break;
+        case 5: _t->orderFilled((*reinterpret_cast< std::add_pointer_t<OrderInfo>>(_a[1]))); break;
+        case 6: _t->orderHistoryLoaded((*reinterpret_cast< std::add_pointer_t<QList<OrderInfo>>>(_a[1]))); break;
+        case 7: _t->orderRejected((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 8: _t->positionsLoaded((*reinterpret_cast< std::add_pointer_t<QList<PositionInfo>>>(_a[1]))); break;
+        case 9: _t->loggedOut((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 10: _t->accountFrozen(); break;
+        case 11: _t->login((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
+        case 12: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[6])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[7]))); break;
+        case 13: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[6]))); break;
+        case 14: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5]))); break;
+        case 15: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4]))); break;
+        case 16: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3]))); break;
+        case 17: _t->registerUser((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
+        case 18: _t->queryQuote((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 19: _t->placeOrder((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<double>>(_a[4]))); break;
+        case 20: _t->cancelOrder((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 21: _t->fillOrder((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 22: _t->loadOrderHistory(); break;
+        case 23: _t->logout(); break;
         default: ;
         }
     }
@@ -227,15 +239,17 @@ void Client::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
             return;
         if (QtMocHelpers::indexOfMethod<void (Client::*)(const OrderInfo & )>(_a, &Client::orderUpdated, 4))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QVector<OrderInfo> & )>(_a, &Client::orderHistoryLoaded, 5))
+        if (QtMocHelpers::indexOfMethod<void (Client::*)(const OrderInfo & )>(_a, &Client::orderFilled, 5))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QString & )>(_a, &Client::orderRejected, 6))
+        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QVector<OrderInfo> & )>(_a, &Client::orderHistoryLoaded, 6))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QVector<PositionInfo> & )>(_a, &Client::positionsLoaded, 7))
+        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QString & )>(_a, &Client::orderRejected, 7))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QString & )>(_a, &Client::loggedOut, 8))
+        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QVector<PositionInfo> & )>(_a, &Client::positionsLoaded, 8))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Client::*)()>(_a, &Client::accountFrozen, 9))
+        if (QtMocHelpers::indexOfMethod<void (Client::*)(const QString & )>(_a, &Client::loggedOut, 9))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (Client::*)()>(_a, &Client::accountFrozen, 10))
             return;
     }
 }
@@ -259,14 +273,14 @@ int Client::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 22)
+        if (_id < 24)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 22;
+        _id -= 24;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 22)
+        if (_id < 24)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 22;
+        _id -= 24;
     }
     return _id;
 }
@@ -302,32 +316,38 @@ void Client::orderUpdated(const OrderInfo & _t1)
 }
 
 // SIGNAL 5
-void Client::orderHistoryLoaded(const QVector<OrderInfo> & _t1)
+void Client::orderFilled(const OrderInfo & _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 5, nullptr, _t1);
 }
 
 // SIGNAL 6
-void Client::orderRejected(const QString & _t1)
+void Client::orderHistoryLoaded(const QVector<OrderInfo> & _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 6, nullptr, _t1);
 }
 
 // SIGNAL 7
-void Client::positionsLoaded(const QVector<PositionInfo> & _t1)
+void Client::orderRejected(const QString & _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 7, nullptr, _t1);
 }
 
 // SIGNAL 8
-void Client::loggedOut(const QString & _t1)
+void Client::positionsLoaded(const QVector<PositionInfo> & _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 8, nullptr, _t1);
 }
 
 // SIGNAL 9
+void Client::loggedOut(const QString & _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 9, nullptr, _t1);
+}
+
+// SIGNAL 10
 void Client::accountFrozen()
 {
-    QMetaObject::activate(this, &staticMetaObject, 9, nullptr);
+    QMetaObject::activate(this, &staticMetaObject, 10, nullptr);
 }
 QT_WARNING_POP

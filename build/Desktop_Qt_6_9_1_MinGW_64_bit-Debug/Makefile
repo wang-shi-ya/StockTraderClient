@@ -289,6 +289,7 @@ Makefile: ../../StockTraderClient.pro D:/Qt/6.9.1/mingw_64/mkspecs/win32-g++/qma
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/resolve_config.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/exclusive_builds_post.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/default_post.prf \
+		D:/Qt/6.9.1/mingw_64/mkspecs/features/win32/console.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/qml_debug.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/precompile_header.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/warn_on.prf \
@@ -301,7 +302,6 @@ Makefile: ../../StockTraderClient.pro D:/Qt/6.9.1/mingw_64/mkspecs/win32-g++/qma
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/uic.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/qmake_use.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/file_copies.prf \
-		D:/Qt/6.9.1/mingw_64/mkspecs/features/win32/windows.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/testcase_targets.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/exceptions.prf \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/yacc.prf \
@@ -310,9 +310,7 @@ Makefile: ../../StockTraderClient.pro D:/Qt/6.9.1/mingw_64/mkspecs/win32-g++/qma
 		D:/Qt/6.9.1/mingw_64/lib/Qt6Widgets.prl \
 		D:/Qt/6.9.1/mingw_64/lib/Qt6Gui.prl \
 		D:/Qt/6.9.1/mingw_64/lib/Qt6Network.prl \
-		D:/Qt/6.9.1/mingw_64/lib/Qt6Sql.prl \
 		D:/Qt/6.9.1/mingw_64/lib/Qt6Core.prl \
-		D:/Qt/6.9.1/mingw_64/lib/Qt6EntryPoint.prl \
 		D:/Qt/6.9.1/mingw_64/mkspecs/features/build_pass.prf \
 		../../resources.qrc
 	$(QMAKE) -o Makefile ..\..\StockTraderClient.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
@@ -535,6 +533,7 @@ D:/Qt/6.9.1/mingw_64/mkspecs/features/win32/default_pre.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/resolve_config.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/exclusive_builds_post.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/default_post.prf:
+D:/Qt/6.9.1/mingw_64/mkspecs/features/win32/console.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/qml_debug.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/precompile_header.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/warn_on.prf:
@@ -547,7 +546,6 @@ D:/Qt/6.9.1/mingw_64/mkspecs/features/win32/opengl.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/uic.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/qmake_use.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/file_copies.prf:
-D:/Qt/6.9.1/mingw_64/mkspecs/features/win32/windows.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/testcase_targets.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/exceptions.prf:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/yacc.prf:
@@ -556,9 +554,7 @@ D:/Qt/6.9.1/mingw_64/mkspecs/features/lex.prf:
 D:/Qt/6.9.1/mingw_64/lib/Qt6Widgets.prl:
 D:/Qt/6.9.1/mingw_64/lib/Qt6Gui.prl:
 D:/Qt/6.9.1/mingw_64/lib/Qt6Network.prl:
-D:/Qt/6.9.1/mingw_64/lib/Qt6Sql.prl:
 D:/Qt/6.9.1/mingw_64/lib/Qt6Core.prl:
-D:/Qt/6.9.1/mingw_64/lib/Qt6EntryPoint.prl:
 D:/Qt/6.9.1/mingw_64/mkspecs/features/build_pass.prf:
 ../../resources.qrc:
 qmake: FORCE

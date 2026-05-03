@@ -1,6 +1,7 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
 #include "client.h"
+#include "themehelper.h"
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
@@ -8,13 +9,16 @@
 #include <QRandomGenerator>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QAction>
+#include <QPainter>
 
 LoginDialog::LoginDialog(Client *client, QWidget *parent)
-	: QDialog(parent), ui(new Ui::LoginDialog), m_client(client)
-	, m_emailValidator(nullptr), m_phoneValidator(nullptr), m_idCardValidator(nullptr) {
+	: QDialog(parent), m_emailValidator(nullptr), m_phoneValidator(nullptr), m_idCardValidator(nullptr)
+	, ui(new Ui::LoginDialog), m_client(client) {
 	ui->setupUi(this);
 	setWindowTitle(tr("Login / Register"));
-	
+    setWindowIcon(QIcon(":/icons/app.ico"));
+    setMinimumSize(300, 250);  // 设置最小尺寸
 	// 设置输入验证
 	setupInputValidation();
 	
@@ -25,8 +29,16 @@ LoginDialog::LoginDialog(Client *client, QWidget *parent)
 	ui->labelCaptchaCode->installEventFilter(this);
 	ui->labelCaptchaCode->setCursor(Qt::PointingHandCursor);
 	ui->labelCaptchaCode->setToolTip(tr("点击刷新验证码"));
-	
+
+    //设置账号密码
+    ui->lineUserLogin->setText("wsy");
+    ui->linePwdLogin->setText("123456789");
+    ui->lineCaptchaLogin->setText(m_captchaCode);
+	setupPasswordToggles();
 	setupConnections();
+
+	connect(ThemeHelper::instance(), &ThemeHelper::themeChanged, this, &LoginDialog::refreshTheme);
+	refreshTheme();  // 初始化主题样式
 }
 
 LoginDialog::~LoginDialog() { delete ui; }
@@ -197,5 +209,58 @@ bool LoginDialog::eventFilter(QObject *obj, QEvent *event) {
 		}
 	}
 	return QDialog::eventFilter(obj, event);
+}
+
+void LoginDialog::setupPasswordToggles() {
+	setupPasswordToggle(ui->linePwdLogin);
+	setupPasswordToggle(ui->linePwdReg);
+}
+
+void LoginDialog::setupPasswordToggle(QLineEdit *lineEdit) {
+	QAction *action = lineEdit->addAction(createEyeIcon(false), QLineEdit::TrailingPosition);
+	action->setCheckable(true);
+	connect(action, &QAction::toggled, this, [lineEdit, action](bool checked) {
+		lineEdit->setEchoMode(checked ? QLineEdit::Normal : QLineEdit::Password);
+		action->setIcon(createEyeIcon(checked));
+	});
+}
+
+QIcon LoginDialog::createEyeIcon(bool open) {
+	QPixmap pix(22, 20);
+	pix.fill(Qt::transparent);
+	QPainter p(&pix);
+	p.setRenderHint(QPainter::Antialiasing);
+	if (open) {
+		// 眼睛外轮廓
+		p.setPen(QPen(QColor("#666"), 2));
+		p.setBrush(Qt::NoBrush);
+		p.drawEllipse(QPointF(11, 10), 8, 6);
+		// 瞳孔
+		p.setBrush(QColor("#333"));
+		p.drawEllipse(QPointF(11, 10), 3, 5);
+	} else {
+		// 眼睛外轮廓
+		p.setPen(QPen(QColor("#888"), 2));
+		p.setBrush(Qt::NoBrush);
+		p.drawEllipse(QPointF(11, 10), 8, 6);
+		// 斜线遮住
+		p.drawLine(QPointF(3, 4), QPointF(19, 16));
+	}
+	p.end();
+	return QIcon(pix);
+}
+
+void LoginDialog::refreshTheme() {
+	bool dark = ThemeHelper::isDarkMode();
+	QString accent = dark ? "#64B5F6" : "#1E88E5";
+	QString captchaBg = dark ? "#2a2a40" : "#f0f0f0";
+	QString captchaBorder = dark ? "#444" : "#ddd";
+	QString captchaColor = dark ? "#e0e0e0" : "#333";
+
+	ui->labelTitle->setStyleSheet(
+		QString("font-size: 24px; font-weight: bold; color: %1; margin-bottom: 10px;").arg(accent));
+	ui->labelCaptchaCode->setStyleSheet(
+		QString("background-color: %1; border: 1px solid %2; font-size: 18px; font-weight: bold; color: %3; border-radius: 4px;")
+			.arg(captchaBg, captchaBorder, captchaColor));
 }
 

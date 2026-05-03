@@ -33,7 +33,6 @@ public:
     QLabel *labelSymbol;
     QComboBox *symbolCombo;
     QPushButton *refreshButton;
-    QPushButton *reloadButton;
     QSpacerItem *horizontalSpacer;
     QTabWidget *tabWidget;
     QWidget *basicInfoTab;
@@ -62,6 +61,7 @@ public:
 
         symbolCombo = new QComboBox(CompanyWidget);
         symbolCombo->setObjectName("symbolCombo");
+        symbolCombo->setMinimumWidth(200);
 
         controlLayout->addWidget(symbolCombo);
 
@@ -69,11 +69,6 @@ public:
         refreshButton->setObjectName("refreshButton");
 
         controlLayout->addWidget(refreshButton);
-
-        reloadButton = new QPushButton(CompanyWidget);
-        reloadButton->setObjectName("reloadButton");
-
-        controlLayout->addWidget(reloadButton);
 
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
@@ -137,7 +132,6 @@ public:
     {
         labelSymbol->setText(QCoreApplication::translate("CompanyWidget", "\350\202\241\347\245\250\344\273\243\347\240\201:", nullptr));
         refreshButton->setText(QCoreApplication::translate("CompanyWidget", "\345\210\267\346\226\260", nullptr));
-        reloadButton->setText(QCoreApplication::translate("CompanyWidget", "\351\207\215\346\226\260\345\212\240\350\275\275\345\210\227\350\241\250", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(basicInfoTab), QCoreApplication::translate("CompanyWidget", "\345\237\272\346\234\254\344\277\241\346\201\257", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(financialTab), QCoreApplication::translate("CompanyWidget", "\350\264\242\345\212\241\346\225\260\346\215\256", nullptr));
         announcementText->setPlainText(QCoreApplication::translate("CompanyWidget", "\346\232\202\346\227\240\345\205\254\345\221\212\344\277\241\346\201\257", nullptr));

@@ -1,287 +1,356 @@
 #include "userservice.h"
-#include <QRandomGenerator>
+#include "httpmanager.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QNetworkReply>
 #include <QDebug>
 #include <QDateTime>
-#include <QTime>
 
-UserService::UserService(DbManager *dbManager, QObject *parent)
+UserService::UserService(QObject *parent)
     : QObject(parent)
-    , m_dbManager(dbManager)
 {
 }
 
-UserService::~UserService() {
+UserService::~UserService() = default;
+
+void UserService::changePassword(const QString &oldPassword, const QString &newPassword)
+{
+    QJsonObject body;
+    body["oldPassword"] = oldPassword;
+    body["newPassword"] = newPassword;
+
+    QNetworkReply *reply = HttpManager::instance().put("/api/user/change-password", body);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            emit passwordChangeSuccess(resp["message"].toString(QString::fromUtf8("密码修改成功")));
+        } else {
+            emit passwordChangeFailed(resp["message"].toString(QString::fromUtf8("密码修改失败")));
+        }
+    });
 }
 
-void UserService::clearAllCaches() {
+void UserService::clearAllCaches()
+{
     m_userInfo.clear();
     m_accountInfo.clear();
     m_cashFlowRecords.clear();
     m_tradingStats.clear();
 }
 
-void UserService::loadUserInfo(const QString &username) {
-    if (!m_userInfo.contains(username)) {
-        // 尝试从数据库加载
-        UserInfo info = loadUserInfoFromDB(username);
-        // 如果数据库中没有找到记录（username为空），或者username不匹配，生成默认值
-        if (info.username.isEmpty() || info.username != username) {
-            // 如果数据库中没有，使用默认值，但至少设置username
-            info = generateRandomUserInfo(username);
+// ---- User Info ----
+
+void UserService::loadUserInfo(const QString &username)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/user/info");
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            QJsonObject data = HttpManager::dataObject(resp);
+            UserInfo info = parseUserInfoJson(username, data);
+            m_userInfo[username] = info;
+            emit userInfoLoaded(info);
         } else {
-            // 从数据库加载成功，但确保username正确设置
+            UserInfo info;
             info.username = username;
+            m_userInfo[username] = info;
+            emit userInfoLoaded(info);
         }
-        m_userInfo[username] = info;
-    } else {
-        // 如果已经缓存，确保username是最新的
-        m_userInfo[username].username = username;
-    }
-    emit userInfoLoaded(m_userInfo[username]);
-    qDebug() << "User info loaded for:" << username << "username:" << m_userInfo[username].username;
+    });
 }
 
-void UserService::updateUserInfo(const UserInfo &userInfo) {
+void UserService::updateUserInfo(const UserInfo &userInfo)
+{
     m_userInfo[userInfo.username] = userInfo;
     emit userInfoUpdated(userInfo);
-    qDebug() << "User info updated for:" << userInfo.username;
 }
 
-bool UserService::saveUserInfoToDB(const UserInfo &userInfo) {
-    if (!m_dbManager) {
-        qWarning() << "DbManager is null, cannot save user info";
-        return false;
-    }
-    
-    // 保存到数据库
-    bool success = m_dbManager->saveUserInfo(
-        userInfo.username,
-        userInfo.realName,
-        userInfo.email,
-        userInfo.phone,
-        userInfo.idCard,
-        userInfo.address,
-        userInfo.status.isEmpty() ? "正常" : userInfo.status
-    );
-    
-    if (success) {
-        // 更新内存中的数据
-        m_userInfo[userInfo.username] = userInfo;
-        emit userInfoUpdated(userInfo);
-        qDebug() << "User info saved to DB for:" << userInfo.username;
-    } else {
-        qWarning() << "Failed to save user info to DB for:" << userInfo.username;
-    }
-    
-    return success;
+bool UserService::saveUserInfoToDB(const UserInfo &userInfo)
+{
+    QJsonObject body;
+    body["realName"] = userInfo.realName;
+    body["email"] = userInfo.email;
+    body["phone"] = userInfo.phone;
+    body["idCard"] = userInfo.idCard;
+    body["address"] = userInfo.address;
+    body["status"] = userInfo.status.isEmpty() ? "正常" : userInfo.status;
+
+    QNetworkReply *reply = HttpManager::instance().put("/api/user/info", body);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, userInfo]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            m_userInfo[userInfo.username] = userInfo;
+            emit userInfoUpdated(userInfo);
+        }
+    });
+    return true; // Fire-and-forget, assume success
 }
 
-UserInfo UserService::getUserInfo(const QString &username) const {
+UserInfo UserService::getUserInfo(const QString &username) const
+{
     return m_userInfo.value(username, UserInfo());
 }
 
-void UserService::loadAccountInfo(const QString &username) {
-    if (!m_accountInfo.contains(username)) {
-        m_accountInfo[username] = generateRandomAccountInfo(username);
-    }
-    emit accountInfoLoaded(m_accountInfo[username]);
-    qDebug() << "Account info loaded for:" << username;
+// ---- Account Info ----
+
+void UserService::loadAccountInfo(const QString &username)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/user/account");
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            QJsonObject data = HttpManager::dataObject(resp);
+            AccountInfo info = parseAccountJson(username, data);
+            m_accountInfo[username] = info;
+            emit accountInfoLoaded(info);
+        }
+    });
 }
 
-void UserService::updateAccountInfo(const QString &username, double availableCash) {
+void UserService::updateAccountInfo(const QString &username, double availableCash)
+{
     if (m_accountInfo.contains(username)) {
-        m_accountInfo[username].availableCash = availableCash;
-        m_accountInfo[username].totalAssets = availableCash + m_accountInfo[username].frozenCash + m_accountInfo[username].marketValue;
-        m_accountInfo[username].updateTime = QDateTime::currentDateTime();
-        emit accountInfoUpdated(m_accountInfo[username]);
+        AccountInfo &info = m_accountInfo[username];
+        info.availableCash = availableCash;
+        info.totalAssets = availableCash + info.frozenCash + info.marketValue;
+        info.updateTime = QDateTime::currentDateTime();
+        emit accountInfoUpdated(info);
     }
 }
 
-AccountInfo UserService::getAccountInfo(const QString &username) const {
+AccountInfo UserService::getAccountInfo(const QString &username) const
+{
     return m_accountInfo.value(username, AccountInfo());
 }
 
-void UserService::calculateMarketValue(const QString &username, const QVector<PositionInfo> &positions) {
-    if (!m_accountInfo.contains(username)) {
-        return;
-    }
-
+void UserService::calculateMarketValue(const QString &username, const QVector<PositionInfo> &positions)
+{
+    if (!m_accountInfo.contains(username)) return;
     double marketValue = 0.0;
-    for (const PositionInfo &position : positions) {
-        // 这里应该使用实时价格，暂时使用平均价格
-        marketValue += position.quantity * position.averagePrice;
+    double costBasis = 0.0;
+    for (const auto &p : positions) {
+        double price = p.currentPrice > 0 ? p.currentPrice : p.averagePrice;
+        marketValue += p.quantity * price;
+        costBasis += p.quantity * p.averagePrice;
     }
-
-    m_accountInfo[username].marketValue = marketValue;
-    m_accountInfo[username].totalAssets = m_accountInfo[username].availableCash + 
-                                        m_accountInfo[username].frozenCash + marketValue;
-    m_accountInfo[username].updateTime = QDateTime::currentDateTime();
-    
-    emit accountInfoUpdated(m_accountInfo[username]);
+    AccountInfo &info = m_accountInfo[username];
+    info.marketValue = marketValue;
+    info.totalAssets = info.availableCash + info.frozenCash + marketValue;
+    info.profitLoss = marketValue - costBasis;
+    info.profitLossPercent = costBasis > 0 ? (info.profitLoss / costBasis) * 100.0 : 0.0;
+    info.updateTime = QDateTime::currentDateTime();
+    emit accountInfoUpdated(info);
 }
 
-void UserService::loadCashFlowRecords(const QString &username, int limit) {
-    if (!m_cashFlowRecords.contains(username)) {
+// ---- Cash Flow ----
+
+void UserService::loadCashFlowRecords(const QString &username, int limit)
+{
+    QString path = QString("/api/user/cash-flow?limit=%1").arg(limit);
+    QNetworkReply *reply = HttpManager::instance().get(path);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
         QVector<CashFlowRecord> records;
-        for (int i = 0; i < limit; ++i) {
-            records.append(generateRandomCashFlowRecord(username));
+        if (HttpManager::isSuccess(resp)) {
+            QJsonArray arr = HttpManager::dataArray(resp);
+            for (const QJsonValue &v : arr)
+                records.append(parseCashFlowJson(username, v.toObject()));
         }
         m_cashFlowRecords[username] = records;
-    }
-    emit cashFlowRecordsLoaded(m_cashFlowRecords[username]);
-    qDebug() << "Cash flow records loaded for:" << username << "count:" << m_cashFlowRecords[username].size();
+        emit cashFlowRecordsLoaded(records);
+    });
 }
 
-void UserService::addCashFlowRecord(const CashFlowRecord &record) {
+void UserService::addCashFlowRecord(const CashFlowRecord &record)
+{
     m_cashFlowRecords[record.username].prepend(record);
-    // 保持最近50条记录
-    if (m_cashFlowRecords[record.username].size() > 50) {
+    if (m_cashFlowRecords[record.username].size() > 50)
         m_cashFlowRecords[record.username].resize(50);
-    }
     emit cashFlowRecordsLoaded(m_cashFlowRecords[record.username]);
 }
 
-QVector<CashFlowRecord> UserService::getCashFlowRecords(const QString &username) const {
+QVector<CashFlowRecord> UserService::getCashFlowRecords(const QString &username) const
+{
     return m_cashFlowRecords.value(username, QVector<CashFlowRecord>());
 }
 
-void UserService::loadTradingStats(const QString &username) {
-    if (!m_tradingStats.contains(username)) {
-        m_tradingStats[username] = generateRandomTradingStats(username);
-    }
-    emit tradingStatsLoaded(m_tradingStats[username]);
-    qDebug() << "Trading stats loaded for:" << username;
+// ---- Trading Stats ----
+
+void UserService::loadTradingStats(const QString &username)
+{
+    QNetworkReply *reply = HttpManager::instance().get("/api/user/trading-stats");
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            QJsonObject data = HttpManager::dataObject(resp);
+            TradingStats stats = parseTradingStatsJson(username, data);
+            m_tradingStats[username] = stats;
+            emit tradingStatsLoaded(stats);
+        }
+    });
 }
 
-void UserService::updateTradingStats(const QString &username, const OrderInfo &order) {
-    if (!m_tradingStats.contains(username)) {
-        m_tradingStats[username] = generateRandomTradingStats(username);
-    }
+void UserService::updateTradingStats(const QString &username, const OrderInfo &order)
+{
+    if (!m_tradingStats.contains(username))
+        return;
 
     TradingStats &stats = m_tradingStats[username];
     stats.totalTrades++;
-    if (order.side == "买入" || order.side == "Buy") {
+    if (order.side == QString::fromUtf8("买入") || order.side == "Buy")
         stats.buyTrades++;
-    } else {
+    else
         stats.sellTrades++;
-    }
     stats.totalVolume += order.quantity;
     stats.totalAmount += order.quantity * order.price;
     stats.lastTradeTime = QDateTime::currentDateTime();
-    
-    // 计算胜率（简化计算）
-    stats.winRate = QRandomGenerator::global()->bounded(40, 80);
-    
     emit tradingStatsLoaded(stats);
 }
 
-TradingStats UserService::getTradingStats(const QString &username) const {
+TradingStats UserService::getTradingStats(const QString &username) const
+{
     return m_tradingStats.value(username, TradingStats());
 }
 
-void UserService::loadAssetOverview(const QString &username) {
+// ---- Deposit / Withdraw ----
+
+void UserService::deposit(double amount, const QString &description)
+{
+    QJsonObject body;
+    body["amount"] = amount;
+    body["description"] = description;
+
+    QNetworkReply *reply = HttpManager::instance().post("/api/user/deposit", body);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            emit depositSuccess(resp["message"].toString(QString::fromUtf8("充值成功")));
+        } else {
+            emit depositFailed(resp["message"].toString(QString::fromUtf8("充值失败")));
+        }
+    });
+}
+
+void UserService::withdraw(double amount, const QString &description)
+{
+    QJsonObject body;
+    body["amount"] = amount;
+    body["description"] = description;
+
+    QNetworkReply *reply = HttpManager::instance().post("/api/user/withdraw", body);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        if (HttpManager::isSuccess(resp)) {
+            emit withdrawSuccess(resp["message"].toString(QString::fromUtf8("提现成功")));
+        } else {
+            emit withdrawFailed(resp["message"].toString(QString::fromUtf8("提现失败")));
+        }
+    });
+}
+
+void UserService::loadTransactions(const QString &username, int page, int pageSize)
+{
+    QString path = QString("/api/user/transactions?page=%1&pageSize=%2").arg(page).arg(pageSize);
+    QNetworkReply *reply = HttpManager::instance().get(path);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, username]() {
+        reply->deleteLater();
+        QJsonObject resp = HttpManager::parseResponse(reply);
+        QVector<CashFlowRecord> records;
+        if (HttpManager::isSuccess(resp)) {
+            QJsonObject data = HttpManager::dataObject(resp);
+            QJsonArray arr = data["rows"].toArray();
+            for (const QJsonValue &v : arr)
+                records.append(parseCashFlowJson(username, v.toObject()));
+        }
+        m_cashFlowRecords[username] = records;
+        emit transactionsLoaded(records);
+    });
+}
+
+// ---- Asset Overview ----
+
+void UserService::loadAssetOverview(const QString &username)
+{
     loadUserInfo(username);
     loadAccountInfo(username);
     loadCashFlowRecords(username, 10);
     loadTradingStats(username);
 }
 
-void UserService::refreshAssetData(const QString &username) {
+void UserService::refreshAssetData(const QString &username)
+{
     loadAccountInfo(username);
     loadCashFlowRecords(username, 10);
     loadTradingStats(username);
 }
 
-UserInfo UserService::generateRandomUserInfo(const QString &username) const {
+// ---- JSON Parsers ----
+
+UserInfo UserService::parseUserInfoJson(const QString &username, const QJsonObject &json)
+{
     UserInfo info;
     info.username = username;
-    info.email = QString("%1@example.com").arg(username);
-    info.phone = QString("1%1").arg(QRandomGenerator::global()->bounded(100000000, 999999999));
-    info.realName = QString("用户%1").arg(QRandomGenerator::global()->bounded(1000, 9999));
-    info.idCard = QString("%1%2%3").arg(QRandomGenerator::global()->bounded(110000, 659999))
-                                   .arg(QRandomGenerator::global()->bounded(19000101, 20231231))
-                                   .arg(QRandomGenerator::global()->bounded(1000, 9999));
-    info.address = QString("北京市朝阳区%1号").arg(QRandomGenerator::global()->bounded(1, 999));
-    info.registerTime = QDateTime::currentDateTime().addDays(-QRandomGenerator::global()->bounded(1, 365));
-    info.lastLoginTime = QDateTime::currentDateTime().addSecs(-QRandomGenerator::global()->bounded(60, 3600));
-    info.status = "正常";
+    info.realName = json["realName"].toString();
+    info.email = json["email"].toString();
+    info.phone = json["phone"].toString();
+    info.idCard = json["idCard"].toString();
+    info.address = json["address"].toString();
+    info.registerTime = QDateTime::fromString(json["registerTime"].toString(), Qt::ISODate);
+    info.lastLoginTime = QDateTime::fromString(json["lastLoginTime"].toString(), Qt::ISODate);
+    info.status = json["status"].toString("正常");
     return info;
 }
 
-AccountInfo UserService::generateRandomAccountInfo(const QString &username) const {
+AccountInfo UserService::parseAccountJson(const QString &username, const QJsonObject &json)
+{
     AccountInfo info;
     info.username = username;
-    info.availableCash = QRandomGenerator::global()->bounded(10000, 1000000);
-    info.frozenCash = QRandomGenerator::global()->bounded(0, 50000);
-    info.marketValue = QRandomGenerator::global()->bounded(50000, 500000);
-    info.totalAssets = info.availableCash + info.frozenCash + info.marketValue;
-    info.profitLoss = QRandomGenerator::global()->bounded(-50000, 100000);
-    info.profitLossPercent = info.profitLoss / (info.totalAssets - info.profitLoss) * 100;
-    info.updateTime = QDateTime::currentDateTime();
+    info.availableCash = json["availableCash"].toDouble();
+    info.frozenCash = json["frozenCash"].toDouble();
+    info.marketValue = json["marketValue"].toDouble();
+    info.totalAssets = json["totalAssets"].toDouble();
+    info.profitLoss = json["profitLoss"].toDouble();
+    info.profitLossPercent = json["profitLossPercent"].toDouble();
+    info.updateTime = QDateTime::fromString(json["updateTime"].toString(), Qt::ISODate);
+    if (!info.updateTime.isValid()) info.updateTime = QDateTime::currentDateTime();
     return info;
 }
 
-CashFlowRecord UserService::generateRandomCashFlowRecord(const QString &username) const {
+CashFlowRecord UserService::parseCashFlowJson(const QString &username, const QJsonObject &json)
+{
     CashFlowRecord record;
-    record.recordId = QString("CF%1").arg(QRandomGenerator::global()->bounded(100000, 999999));
+    record.recordId = json["recordId"].toString();
     record.username = username;
-    
-    QStringList types = {"充值", "提现", "买入", "卖出", "分红", "手续费", "利息"};
-    record.type = types[QRandomGenerator::global()->bounded(types.size())];
-    
-    record.amount = QRandomGenerator::global()->bounded(-50000, 100000);
-    record.balance = QRandomGenerator::global()->bounded(10000, 1000000);
-    record.description = QString("%1操作").arg(record.type);
-    record.createTime = QDateTime::currentDateTime().addDays(-QRandomGenerator::global()->bounded(0, 30));
-    record.status = "已完成";
-    
+    record.type = json["type"].toString();
+    record.amount = json["amount"].toDouble();
+    record.balance = json["balance"].toDouble();
+    record.description = json["description"].toString();
+    record.createTime = QDateTime::fromString(json["createTime"].toString(), Qt::ISODate);
+    record.status = json["status"].toString("已完成");
     return record;
 }
 
-UserInfo UserService::loadUserInfoFromDB(const QString &username) const {
-    UserInfo info;
-    info.username = username; // 至少设置用户名
-    
-    if (!m_dbManager) {
-        qDebug() << "DbManager is null, cannot load user info";
-        return info;
-    }
-    
-    QString realName, email, phone, idCard, address, status;
-    QDateTime registerTime, lastLoginTime;
-    
-    bool success = m_dbManager->loadUserInfo(username, realName, email, phone, idCard, 
-                                             address, registerTime, lastLoginTime, status);
-    if (success) {
-        // 从数据库加载成功，填充信息
-        info.username = username;
-        info.realName = realName;
-        info.email = email;
-        info.phone = phone;
-        info.idCard = idCard;
-        info.address = address;
-        info.registerTime = registerTime;
-        info.lastLoginTime = lastLoginTime;
-        info.status = status.isEmpty() ? "正常" : status;
-        qDebug() << "User info loaded from DB for:" << username << "realName:" << realName;
-    } else {
-        qDebug() << "Failed to load user info from DB for:" << username;
-        // 即使加载失败，也返回带有username的info，这样至少用户名可以显示
-    }
-    
-    return info;
-}
-
-TradingStats UserService::generateRandomTradingStats(const QString &username) const {
+TradingStats UserService::parseTradingStatsJson(const QString &username, const QJsonObject &json)
+{
     TradingStats stats;
     stats.username = username;
-    stats.totalTrades = QRandomGenerator::global()->bounded(10, 1000);
-    stats.buyTrades = stats.totalTrades * QRandomGenerator::global()->bounded(40, 60) / 100;
-    stats.sellTrades = stats.totalTrades - stats.buyTrades;
-    stats.totalVolume = QRandomGenerator::global()->bounded(10000, 1000000);
-    stats.totalAmount = QRandomGenerator::global()->bounded(100000, 10000000);
-    stats.totalProfit = QRandomGenerator::global()->bounded(-100000, 200000);
-    stats.winRate = QRandomGenerator::global()->bounded(40, 80);
-    stats.lastTradeTime = QDateTime::currentDateTime().addDays(-QRandomGenerator::global()->bounded(0, 7));
+    stats.totalTrades = json["totalTrades"].toInt();
+    stats.buyTrades = json["buyTrades"].toInt();
+    stats.sellTrades = json["sellTrades"].toInt();
+    stats.totalVolume = json["totalVolume"].toDouble();
+    stats.totalAmount = json["totalAmount"].toDouble();
+    stats.totalProfit = json["totalProfit"].toDouble();
+    stats.winRate = json["winRate"].toDouble();
+    stats.lastTradeTime = QDateTime::fromString(json["lastTradeTime"].toString(), Qt::ISODate);
+    if (!stats.lastTradeTime.isValid()) stats.lastTradeTime = QDateTime::currentDateTime();
     return stats;
 }

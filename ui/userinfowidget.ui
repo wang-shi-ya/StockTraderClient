@@ -172,6 +172,37 @@
         </widget>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="transactionLayout">
+         <item>
+          <widget class="QPushButton" name="depositButton">
+           <property name="text">
+            <string>充值</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="withdrawButton">
+           <property name="text">
+            <string>提现</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="transactionSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QTableWidget" name="assetTable">
          <property name="editTriggers">
           <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
